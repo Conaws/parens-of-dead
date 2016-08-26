@@ -12,10 +12,11 @@
                  [compojure "1.5.1"]]
   :profiles {:dev {:plugins [[lein-cljsbuild "1.1.4"]]
                    :dependencies [[reloaded.repl "0.2.2"]]
-                   :source-paths ["dev"]}
-             :cljsbuild {:builds [{:source-paths ["src" "dev"]
-                                   :compiler {:output-to "target/classes/public/app.js"
-                                              :output-dir "target/classes/public/out"
-                                              :optimizations :none
-                                              :recompile-dependents true
-                                              :source-map true}}]}})
+                   :source-paths ["dev"]
+                   :cljsbuild {:builds [{:source-paths ["src" "dev"]
+                                         :main undead.client
+                                         :compiler {:output-to "target/classes/public/app.js"
+                                                    :output-dir "target/classes/public/out"
+                                                    :optimizations :none
+                                                    :recompile-dependents true
+                                                    :source-map true}}]}}})
