@@ -1,5 +1,7 @@
 (ns undead.web
-  (:require [compojure.core :refer [defroutes GET]]))
+  (:require [compojure
+             [core :refer [defroutes GET]]
+             [route :refer [resources]]]))
 
 (defn index [req]
   {:status  200
@@ -7,4 +9,5 @@
    :body    "hello from compojure"})
 
 (defroutes app
-  (GET "/" [] index ))
+  (GET "/" [] index )
+  (resources "/" ))
