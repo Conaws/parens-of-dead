@@ -9,7 +9,7 @@
 
 (defn- start-server [handler port]
   (let [server (run-server app {:port port})]
-    (println "now running on port 8080")
+    (println (str  "now running on port " port ))
     server))
 
 
