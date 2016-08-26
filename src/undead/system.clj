@@ -5,7 +5,7 @@
 (defn app [req]
   {:status  200
    :headers {"Content-Type" "text/html"}
-   :body    "hello HTTP!"})
+   :body    "hello yous"})
 
 (defn- start-server [handler port]
   (let [server (run-server app {:port port})]
@@ -15,7 +15,7 @@
 
 (defn- stop-server [server]
   (when server
-    (server)))
+    (server))) ;; run server returns a fn that stops itself
 
 (defrecord ParensOfTheDead []
   component/Lifecycle
