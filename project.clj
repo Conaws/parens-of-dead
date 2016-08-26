@@ -6,7 +6,8 @@
   :jvm-apts ["-XX:MaxPermSize-256m"]
   :main undead.system
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [http-kit "2.1.18"]]
+                 [http-kit "2.1.18"]
+                 [com.stuartsierra/component "0.3.1"]]
   :profiles {:dev {:plugins []
                    :dependencies []
                    :source-paths ["dev"]}})
