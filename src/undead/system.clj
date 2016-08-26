@@ -12,15 +12,27 @@
     (println "now running on port 8080")
     server))
 
+
+(defn- stop-server [server]
+  (when server
+    (server)))
+
 (defrecord ParensOfTheDead []
   component/Lifecycle
   (start [this]
     (assoc this :server (start-server app 9009)))
-  (stop [this])
-  )
+  (stop [this]
+    (stop-server (:server this))
+    (dissoc this :server)))
+
+
+(defn create-system []
+  (ParensOfTheDead.))
+
 
 (defn -main [& args]
-  )
+  (.start (create-system)))
+
 
 
 
