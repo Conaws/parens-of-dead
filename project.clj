@@ -10,11 +10,13 @@
                  [com.stuartsierra/component "0.3.1"]
                  [http-kit "2.1.18"]
                  [compojure "1.5.1"]]
-  :profiles {:dev {:plugins [[lein-cljsbuild "1.1.4"]]
+  :profiles {:dev {:plugins [[lein-cljsbuild "1.1.4"]
+                             [lein-figwheel "0.5.4-7"]]
                    :dependencies [[reloaded.repl "0.2.2"]]
                    :source-paths ["dev"]
-                   :cljsbuild {:builds [{:source-paths ["src" "dev"]
-                                         :main undead.client
+                   :cljsbuild {:builds [{:id :main
+                                         :source-paths ["src" "dev"]
+                                         :figwheel true
                                          :compiler {:output-to "target/classes/public/app.js"
                                                     :output-dir "target/classes/public/out"
                                                     :optimizations :none
