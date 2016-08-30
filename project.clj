@@ -9,7 +9,15 @@
                  [org.clojure/clojurescript "1.9.225"]
                  [com.stuartsierra/component "0.3.1"]
                  [http-kit "2.1.18"]
-                 [compojure "1.5.1"]]
+                 [compojure "1.5.1"]
+                 [com.rpl/specter "0.12.0"]
+                 [devcards "0.2.1-7"]
+                 [reagent "0.6.0-SNAPSHOT"]]
+
+  :clean-targets ^{:protect false} ["resources/public/js/compiled"
+                  "target"
+                  "resources/public/js/devcards"]
+
   :profiles {:dev {:plugins [[lein-cljsbuild "1.1.4"]
                              [lein-figwheel "0.5.4-7"]]
                    :dependencies [[reloaded.repl "0.2.2"]]
@@ -21,4 +29,14 @@
                                                     :output-dir "target/classes/public/out"
                                                     :optimizations :none
                                                     :recompile-dependents true
-                                                    :source-map true}}]}}})
+                                                    :source-map true}}
+                                        {:id "devcards"
+                                         :source-paths ["src"]
+                                         :figwheel { :devcards true } ;; <- note this
+                                         :compiler { :main  undead.cards
+                                                    :asset-path "js/devcards"
+                                                    :output-to  "resources/public/js/compiled/devcards.js"
+                                                    :output-dir "resources/public/js/devcards"
+                                                    :source-map-timestamp true }}
+
+                                        ]}}})
