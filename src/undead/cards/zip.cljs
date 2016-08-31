@@ -1,16 +1,9 @@
-(ns undead.cards
+(ns undead.cards.zip
   (:require
    [devcards.core :as dc] ; <-- here
-   [undead.cards.zip]
-   [undead.cards.zombies]
    [reagent.core :as r])
   (:require-macros
    [devcards.core :refer [defcard defcard-rg]]))
 
-(defcard-rg test
+(defcard-rg tes2t
   [:div "hello"])
-
-
-
-
-
