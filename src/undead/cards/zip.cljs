@@ -89,7 +89,7 @@
        [z-buttons zatom]
        (pr-str @zatom)
        (let [[n zstruc :as z] @zatom]
-         (if zstruc
+         (if z
            [:div {:style {:display "grid"
                           :background-color "blue"
                           :grid-column-gap "60px"
@@ -109,8 +109,9 @@
              (pr-str n)] 
             [:div {:style {:grid-area "right"}}
              (pr-str (:r zstruc))]
-            [:div {:style {:grid-area "children"}}
-             (pr-str (z/next z))]])
+            (if (z/branch? z)
+              [:div {:style {:grid-area "children"}}
+                                        (pr-str (z/children z))])])
          )
        ]))
 
