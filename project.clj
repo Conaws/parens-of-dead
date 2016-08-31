@@ -12,7 +12,9 @@
                  [compojure "1.5.1"]
                  [com.rpl/specter "0.12.0"]
                  [devcards "0.2.1-7"]
-                 [reagent "0.6.0-SNAPSHOT"]]
+                 [reagent "0.6.0-SNAPSHOT"]
+                 [posh "0.5.4"]
+                 [datascript "0.15.2"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"

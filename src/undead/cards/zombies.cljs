@@ -50,7 +50,7 @@
   [Board (:board game)])
 
 
-(defn Timer [{:keys sand index}]
+(defn Timer [{:keys [sand index]}]
   [:div {:className (str "timer timer-" index)}
    (for [s sand]
      [:div {:className (str "sand " (name s))}])])
