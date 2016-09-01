@@ -4,6 +4,7 @@
 
 
 
+
 (defn home-render []
   [:div.ui-widget-content {:style {:width "150px" 
                                    :height "150px" 
@@ -80,8 +81,59 @@
 
 
 (defcard-rg dropable
-  [:div
+  [:div.tall
    [draggable]
    [drop-area]])
+
+
+(defn select-render []
+  [:ol#selectable
+   (for [n (range 20)]
+     ^{:key n}[:li n])])
+
+
+
+
+(defcard-rg select
+  [select-render])
+
+
+
+(defn- select-did-mount [this]
+  (.selectable (js/$ (r/dom-node this))))
+
+(defn select []
+  (r/create-class {:reagent-render      select-render
+                   :component-did-mount select-did-mount}))
+
+
+(defcard-rg selectable
+  [select])
+
+
+
+
+(defn select- [render-fn]
+  (r/create-class {:reagent-render      render-fn
+                   :component-did-mount select-did-mount}))
+
+
+(defn drag- [f]
+  (r/create-class {:reagent-render f
+                   :component-did-mount draggable-did-mount}))
+
+
+
+(defn select2-render []
+  [:ol#selectable
+   (for [n (range 20)]
+     ^{:key n}[drag- (fn [] [:li n])])])
+
+
+
+(defcard-rg selectable
+  [select- select2-render])
+
+
 
 
