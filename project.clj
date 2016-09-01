@@ -24,6 +24,7 @@
                              [lein-figwheel "0.5.4-7"]]
                    :dependencies [[reloaded.repl "0.2.2"]]
                    :source-paths ["dev"]
+                   :externs ["externs.js"]
                    :cljsbuild {:builds [{:id :main
                                          :source-paths ["src" "dev"]
                                          :figwheel true
