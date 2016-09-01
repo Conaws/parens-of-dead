@@ -1,34 +1,7 @@
-(ns undead.cards.drag
+(ns undead.cards.setdrag
   (:require [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 
-
-
-
-(defn home-render []
-  [:div.ui-widget-content {:style {:width "150px" 
-                                   :height "150px" 
-                                   :padding "0.5em"}}
-   [:p "Drag me around"]])
-
-
-#_(defn home-did-mount []
-  (js/$ (fn []
-          (.draggable (js/$ "#draggable")))))
-
-
-(defn home-did-mount [this]
-  (.draggable (js/$ (r/dom-node this))))
-
-
-(defn home []
-  (r/create-class {:reagent-render home-render
-                   :component-did-mount home-did-mount}))
-
-
-
-(defcard-rg homedrag
-  [home])
 
 
 
@@ -86,16 +59,6 @@
    [drop-area]])
 
 
-(defn select-render []
-  [:ol#selectable
-   (for [n (range 20)]
-     ^{:key n}[:li n])])
-
-
-
-
-(defcard-rg select
-  [select-render])
 
 
 
@@ -104,14 +67,6 @@
                (clj->js {:start #(js/console.log "yo")
                          :selecting (fn [e ui] (js/console.log ui))})
                ))
-
-(defn select []
-  (r/create-class {:reagent-render      select-render
-                   :component-did-mount select-did-mount}))
-
-
-(defcard-rg selectable
-  [select])
 
 
 
