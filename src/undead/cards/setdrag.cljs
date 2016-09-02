@@ -6,7 +6,7 @@
 
 (defonce app-state (r/atom {:list (vec (range 11))
                        :over -1
-                       :dragging -1}))
+                       :dragging false}))
 
 (defn splice [x vctr pstn]
   (let [vctr (vec (filter #(not (= x %)) vctr))
@@ -15,32 +15,37 @@
     (vec (concat (conj start x)  end))))
 
 
-(defn placeholder [s]
-  [:li {:style {:background "rgb(255,240,120)"}}
-   "Place here"]
+(defn placeholder [i v]
+  [:li {:style {; :height "2em"
+                :background "rgb(255,240,120)"}}
+   [:ul
+    [:li i]
+    [:li v]]]
   )
 
 
 
-(defn listitem [i s]
-    (fn [i s]
+(defn listitem [i v s]
+    (fn [i v s]
       (if (= i (:over @s))
-        [placeholder s]
+        [placeholder (:dragging @s) v]
         [:li {:data-id i
               :draggable true
+   ;           :class-name "placeholder"
               :style {:display
-                      (if (= i (:dragging @s))
+                      (if (= v (:dragging @s))
                         "none")
-                      :background-color
+                      :background-color "green"
+                      :opacity
                       (if (:dragging @s)
-                        "green"
-                        "blue")
+                        "0.7"
+                        "1")
                       }
               :on-drag-enter (fn [e]
                                (swap! s assoc :over i)
                                )
               :on-drag-start (fn [e]
-                               (swap! s assoc :dragging i)
+                               (swap! s assoc :dragging v)
                                )
               :on-drag-end (fn [e]
                              (do
@@ -51,7 +56,7 @@
                                                                  (:over @s)))))
                                (swap! s assoc :over false
                                       :dragging false)))}
-         i]))) 
+         v]))) 
 
 
 
@@ -67,8 +72,8 @@
 (defn list-render [state]
     (fn [state]
       [:ol
-       (for [[x i] (map-indexed vector (:list @state))]
-        ^{:key x}[listitem i state])]))
+       (for [[i v] (map-indexed vector (:list @state))]
+        ^{:key i}[listitem i v state])]))
 
 (defcard-rg listcard
   [list-render app-state]
