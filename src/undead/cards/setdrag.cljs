@@ -1,34 +1,31 @@
 (ns undead.cards.setdrag
   (:require [reagent.core :as r])
-  (:require-macros [devcards.core :refer [defcard-rg]]))
+  (:require-macros
+   [cljs.test  :refer [testing is]]
+   [devcards.core :refer [deftest defcard-rg]]))
+
+(def app-state (r/atom {:list (vec (range 11))
+                       :over -1
+                       :dragging -1}))
 
 
 
 
 (defn placeholder [ s]
-  [:li {:style {:background "rgb(255,240,120)"}
-
-             :on-drag-leave (fn [e]
-                           (swap! s assoc :over false)
-                           ) 
-
-              
-        }
+  [:li {:style {:background "rgb(255,240,120)"}}
    "Place here"]
   )
 
 
 
-(defn listitem [i]
-  (let [s (r/atom {:over false
-                   :dragging false})]
-    (fn [i]
-      (if (:over @s)
+(defn listitem [i s]
+    (fn [i s]
+      (if (= i (:over @s))
         [placeholder s]
         [:li {:data-id i
               :draggable true
               :style {:display
-                      (if (or (:over @s)(:dragging @s))
+                      (if (= i (:dragging @s))
                         "none")
                       :background-color
                       (if (:dragging @s)
@@ -36,29 +33,39 @@
                         "blue")
                       }
               :on-drag-enter (fn [e]
-                               (swap! s assoc :over true)
+                               (swap! s assoc :over i)
                                )
               :on-drag-start (fn [e]
-                               (swap! s assoc :dragging true)
+                               (swap! s assoc :dragging i)
                                )
               :on-drag-end (fn [e]
-                             (swap! s assoc :dragging false)
+                             (do
+                                 (swap! s update :list (fn [l]
+                                                       (assoc l
+                                                              (:over @s) i
+                                                              i (:over @s))
+                                                       ))
+                                 (swap! s assoc :over -1))
                              (js/console.log e)
                              )}
-         i]))) )
+         i]))) 
+
+
+(deftest vectest
+  (testing "assoc"
+    (is (= [1 2 99] (assoc [1 2] 2 99) ))))
 
 
 
-
-
-(defn list-render [l]
-  (let [state (r/atom (vec l))]
-    (fn [l]
+(defn list-render [state]
+    (fn [state]
       [:ol
-
-       (for [i l]
-        ^{:key i}[listitem i])])))
+       (for [i (:list @state)]
+        ^{:key i}[listitem i state])]))
 
 (defcard-rg listcard
-  [list-render (range 10)])
+  [list-render app-state]
+  app-state
+  {:inspect-data true
+   :history true})
 
