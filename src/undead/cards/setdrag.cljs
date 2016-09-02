@@ -15,19 +15,33 @@
     (vec (concat (conj start x)  end))))
 
 
+
+
 (defn placeholder [i v]
   [:li {:style {; :height "2em"
                 :background "rgb(255,240,120)"}}
-   [:ul
-    [:li i]
-    [:li v]]]
+   v]
   )
 
+(defn without [x v]
+  (filter #(not (= x %)) v)
+  )
+
+(defn replace-v [v outgoing incoming]
+  (let [xpos (.indexOf v outgoing)]
+    (assoc v xpos incoming))
+  )
+
+(defn swap-in-vector [v a b]
+  (-> (without b v)
+      vec
+      (replace-v a b)
+    ))
 
 
 (defn listitem [i v s]
     (fn [i v s]
-      (if (= i (:over @s))
+      (if (= :placeholder v)
         [placeholder (:dragging @s) v]
         [:li {:data-id i
               :draggable true
@@ -38,11 +52,14 @@
                       :background-color "green"
                       :opacity
                       (if (:dragging @s)
-                        "0.7"
+                        "0.9"
                         "1")
                       }
               :on-drag-enter (fn [e]
-                               (swap! s assoc :over i)
+                               (swap! s update :list (fn [l]
+                                                         (splice :placeholder
+                                                                 l
+                                                                 i)))
                                )
               :on-drag-start (fn [e]
                                (swap! s assoc :dragging v)
@@ -50,10 +67,7 @@
               :on-drag-end (fn [e]
                              (do
                                (swap! s update :list (fn [l]
-                                                       (if (:over @s)
-                                                         (splice (:dragging @s)
-                                                                 l
-                                                                 (:over @s)))))
+                                                       (swap-in-vector l :placeholder (:dragging @s))))
                                (swap! s assoc :over false
                                       :dragging false)))}
          v]))) 
@@ -63,7 +77,11 @@
 
 (deftest vectest
   (testing "assoc"
-    (is (= [1 3 2] (splice 3 [1 2] 1)))
+    (is (= 0 (.indexOf [1 2] 1)))
+    (is (= 1 (get [1 2] 0)))
+    (is (= [0 2] (replace-v [1 2] 1 0)))
+    (is (= [0 2 1] (swap-in-vector [:boom 2 1 0] :boom 0)))
+    (is (= [3 1 2] (splice 3 [1 2] 0)))
     (is (= [3 1 2] (splice 3 [1 2] 0)))
     (is (= [1 2 99] (assoc [1 2] 2 99) ))))
 
