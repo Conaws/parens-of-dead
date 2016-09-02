@@ -9,15 +9,14 @@
                        :dragging -1}))
 
 (defn splice [x vctr pstn]
-  (let [start (subvec vctr 0 pstn)
+  (let [vctr (vec (filter #(not (= x %)) vctr))
+        start (subvec vctr 0 pstn)
         end (subvec vctr pstn)]
     (vec (concat (conj start x)  end))))
 
 
 (defn placeholder [s]
-  [:li {:on-drag-leave (fn [e]
-                         (swap! s assoc :over false))
-        :style {:background "rgb(255,240,120)"}}
+  [:li {:style {:background "rgb(255,240,120)"}}
    "Place here"]
   )
 
@@ -49,10 +48,9 @@
                                                        (if (:over @s)
                                                          (splice (:dragging @s)
                                                                  l
-                                                                 (:over @s)))
-                                                       ))
-                                 (swap! s assoc :over -1))
-                             )}
+                                                                 (:over @s)))))
+                               (swap! s assoc :over false
+                                      :dragging false)))}
          i]))) 
 
 
@@ -61,6 +59,7 @@
 (deftest vectest
   (testing "assoc"
     (is (= [1 3 2] (splice 3 [1 2] 1)))
+    (is (= [3 1 2] (splice 3 [1 2] 0)))
     (is (= [1 2 99] (assoc [1 2] 2 99) ))))
 
 
