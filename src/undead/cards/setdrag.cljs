@@ -147,7 +147,7 @@
    {:db/id       5
     :logic/type  :and
     :logic/title  "A and B"
-    :set/members #{1 3}}
+    :set/members #{1 2}}
    {:db/id      6
     :logic/type :if-then
     :logic/title "If (A and B) then C"
@@ -178,10 +178,7 @@
 (defn and-render [conn id]
   (let [node (pull conn '[:node/title {:set/members ...}] id)]
     (fn []
-      [:div.flex {:style
-                    {:background-color "red"}}
-       [:label {:style {:margin-right "15px"}}
-        (:db/id @node)]
+      
        [:div.flex.bblack
         {:style
          {:border "1px dotted red"
@@ -191,14 +188,12 @@
           :background-color "#f1f1f1"}}
         "AND "
         (for [m (:set/members @node)]
-          [:button (:db/id m)])]])
+          [logic-node conn (:db/id m)])])
     ))
 
 (defn or-render [conn node]
     (fn [conn node]
-      [:div.flex 
-       [:label {:style {:margin-right "15px"}}
-        (:db/id node)]
+       
        [:div.flex
         {:style
          {:border "1px dotted blue"
@@ -209,8 +204,8 @@
         (for [m (pop (vec (interleave (:set/members node) (repeat :or))))]
           (if (= m :or)
             [:div " or "]
-            [:button (:db/id m)])
-          )]])
+            [logic-node conn (:db/id m)])
+          )])
     )
 
 
@@ -218,24 +213,44 @@
   (fn [conn node]
     [:div {:style
            {
-            :background-color "#f3f3f3"}}
-     [:label (:db/id node)]
-     [:div.flex
-      [:span " IF: "]
-      [:button (:db/id (:logic/if node))]
-      [:span " Then: "]
-      [:button (:db/id (:logic/then node))]]
+            :background-color "#A2A2A2"}}
+     [:div.flex {:style
+                 {:justify-content "space-between"
+                  :background-color "#A2A2A2"}}
+      [:span "IF:"]
+      [logic-node conn (:db/id (:logic/if node))]
+      [:span "Then:"]
+      [logic-node conn (:db/id (:logic/then node))]
+      ]
      ]))
 
 (defn logic-node [conn id]
-  (let [i (pull conn '[*] id)]
+  (let [i (pull conn '[*] id)
+        flipped? (r/atom true)]
     (fn [conn]
-      (condp = (:logic/type @i)
-        :and [and-render conn id]
-        :or [or-render conn @i]
-        :if-then [if-then conn @i]
-        [:div
-         [:button (:db/id @i)]]))))
+      [:div
+       {:style {:background-color
+                "#d8d8d8"
+                :padding "5px"
+                :margin "2px"
+                :border "2px solid #9b9b9b"}
+        }
+       [:div
+        (if @flipped?
+          [:div.flex
+           {:style {:flex-flow "column wrap"}}
+           [:sub.small
+            {:on-click #(swap! flipped? not)}
+            id]
+           (condp = (:logic/type @i)
+             :and [and-render conn id]
+             :or [or-render conn @i]
+             :if-then [if-then conn @i]
+             (:node/title @i))]
+          [:button
+           {:on-click #(swap! flipped? not)}
+           id]
+          )]])))
 
 
 (defn nodes-render [conn]
