@@ -280,21 +280,30 @@
                                  (d/transact! conn [{:db/id id attr
                                                      (js/parseInt (-> e .-target .-value))}])))}]])))
 
+(defn- add-certainty [conn id]
+  (d/transact! conn [{:db/id -1
+                      :certainty/target id
+                      :certainty/score 50}]))
+
 (defn basic-node [conn i]
-  (let [certainty (q conn '[:find [?cert-id] 
+  (let [id (:db/id i)
+        certainty (q conn '[:find [?cert-id]
                             :in $ ?itemid
                             :where [?cert-id :certainty/target ?itemid ]
                             ]
                      (:db/id i))]
     (fn []
       [:div
-
-       (str (:db/id i) " "
-            (pr-str (or (:logic/title i)
-                        (:node/title i))))
+       [:button
+        {:draggable true}
+        (str (:db/id i) " "
+             (pr-str (or (:logic/title i)
+                         (:node/title i))))]
 
        (if-let [[cid] @certainty]
-         [slider :certainty/score conn cid])])))
+         [slider :certainty/score conn cid]
+         [:button {:on-click #(add-certainty conn id)} :eval])]
+      )))
 
 
 (defn nodes-render [conn]
