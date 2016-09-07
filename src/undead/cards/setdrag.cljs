@@ -178,42 +178,53 @@
 (defn and-render [conn id]
   (let [node (pull conn '[:node/title {:set/members ...}] id)]
     (fn []
-      [:div.bblack {:style
-                    {:background-color "#f1f1f1"}}
-       [:label (:db/id @node)]
-       " AND "
-       (for [m (:set/members @node)]
-         [logic-node conn (:db/id m)])])
+      [:div.flex {:style
+                    {:background-color "red"}}
+       [:label {:style {:margin-right "15px"}}
+        (:db/id @node)]
+       [:div.flex.bblack
+        {:style
+         {:border "1px dotted red"
+          :padding "15px"
+          :justify-content "space-between"
+          :align-items "space-between"
+          :background-color "#f1f1f1"}}
+        "AND "
+        (for [m (:set/members @node)]
+          [:button (:db/id m)])]])
     ))
 
 (defn or-render [conn node]
     (fn [conn node]
-      [:div.flex {:style {:flex-direction "column"
-                          :align-items "center"
-                          :justify-content "center"}}
-       [:label (:db/id node)]
-       " or "
+      [:div.flex 
+       [:label {:style {:margin-right "15px"}}
+        (:db/id node)]
        [:div.flex
         {:style
          {:border "1px dotted blue"
-          :padding "5px"
+          :padding "15px"
+          :justify-content "space-between"
+          :align-items "space-between"
           :background-color "#f1f1f1"}}
-        (for [m (:set/members node)]
-          [logic-node conn (:db/id m)])]])
+        (for [m (pop (vec (interleave (:set/members node) (repeat :or))))]
+          (if (= m :or)
+            [:div " or "]
+            [:button (:db/id m)])
+          )]])
     )
 
 
 (defn if-then [conn node]
   (fn [conn node]
     [:div {:style
-           {:display "flex"
+           {
             :background-color "#f3f3f3"}}
      [:label (:db/id node)]
-     [:div.flex.center
-      [:h1 "IF: "]
-      [logic-node conn (:db/id (:logic/if node))]
-      [:h1 "Then: "]
-      [logic-node conn (:db/id (:logic/then node))]]
+     [:div.flex
+      [:span " IF: "]
+      [:button (:db/id (:logic/if node))]
+      [:span " Then: "]
+      [:button (:db/id (:logic/then node))]]
      ]))
 
 (defn logic-node [conn id]
@@ -223,7 +234,8 @@
         :and [and-render conn id]
         :or [or-render conn @i]
         :if-then [if-then conn @i]
-        [:div.bblack.center (:db/id @i)]))))
+        [:div
+         [:button (:db/id @i)]]))))
 
 
 (defn nodes-render [conn]
@@ -250,7 +262,6 @@
                   :flex-flow "column wrap"} 
             (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
               [logic-node conn (:db/id i)])]
-           [:button {:style {:grid-area "other"}}]
            [:div {:style {:border "2px solid blue"
                           :display "flex"
                           :background-color "blue"
