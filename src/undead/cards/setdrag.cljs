@@ -1,8 +1,10 @@
 (ns undead.cards.setdrag
-  (:require [reagent.core :as r])
+  (:require [datascript.core :as d]
+            [posh.reagent :as posh :refer [posh! pull q]] 
+            [reagent.core :as r])
   (:require-macros
-   [cljs.test  :refer [testing is]]
-   [devcards.core :refer [deftest defcard-rg]]))
+   [cljs.test :refer [is testing]]
+   [devcards.core :refer [defcard-rg deftest]]))
 
 (defonce app-state (r/atom {:list (vec (take 11 "abcdefghijkl"))
                        :over -1
@@ -116,8 +118,61 @@
 
 
 
+(def schema {:set/children {:db/valueType :db.type/ref
+                             :db/cardinality :db.cardinality/many}
+             :set/order  {:db/cardinality :db.cardinality/one}})
+
+
+(defonce lconn (d/create-conn schema))
+(posh! lconn)
+
+
+(def  nodes
+  [{:db/id 1
+    :node/text "First Node"}
+   {:db/id 2
+    :node/text "Second"}
+   {:db/id 3
+    :node/text "3rd node"}
+   {:db/id 4
+    :node/text "4nod"}
+   {:db/id 5
+    :node/text "fifth node"}
+   {:db/id 6
+    :node/text "node 6"}
+   {:db/id 7
+    :node/text "node 7"}])
 
 
 
 
+(def set-example [{:db/id 8
+                   :set/type :set/union
+                   :set/members #{1 3}}
+                  {:db/id 9
+                   :set/type :set/difference
+                   :set/outer #{1}
+                   :set/removed #{2}}])
 
+
+
+
+(d/transact! lconn nodes)
+
+
+(defn nodes-render [conn]
+      (let [n (q '[:find ?eid ?text 
+                   :where [?eid :node/text ?text ]]
+                 conn)]
+        (fn []
+          [:div
+           (pr-str n)
+           (for [i @n]
+             [:div.cell
+              {:draggable true}
+              (pr-str i)])]
+          )))
+
+
+(defcard-rg nodestest
+  [nodes-render lconn])
