@@ -223,7 +223,7 @@
     :and [and-render conn (:db/id i)]
     :or [or-render i]
     :if-then [if-then conn i]
-    [:button (pr-str i)]))
+    [:div (pr-str i)]))
 
 
 (defn nodes-render [conn]
@@ -248,7 +248,7 @@
                        }}
            [:div {:display "flex"
                   :flex-flow "column wrap"} 
-            (for [[i] @all-ents]
+            (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
               [logic-node conn i])]
            [:button {:style {:grid-area "other"}}]
            [:div {:style {:border "2px solid blue"
@@ -260,10 +260,12 @@
                           :flex-flow "column wrap"
                           :width "150px"
                           :grid-area "items"}}
-            (for [[i] @all-ents]
+            (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
               [:div
                {:draggable true}
-               (pr-str (:node/title i))])]]
+               (str (:db/id i) " "
+                    (pr-str (or (:logic/title i)
+                                (:node/title i))))])]]
           )))
 
 
