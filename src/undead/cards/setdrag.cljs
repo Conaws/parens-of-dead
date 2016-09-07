@@ -121,6 +121,8 @@
 
 (def schema {:set/members {:db/valueType :db.type/ref
                              :db/cardinality :db.cardinality/many}
+             :certainty/target  {:db/valueType :db.type/ref
+                                 :db/cardinality :db.cardinality/one}
              :logic/not  {:db/valueType :db.type/ref
                           :db/cardinality :db.cardinality/one}
              :logic/then  {:db/valueType :db.type/ref
@@ -168,6 +170,15 @@
     :logic/title "If ((B or C) or A) then D"
     :logic/if 9
     :logic/then 8}
+   {:db/id 11
+    :certainty/score 90
+    :certainty/target 1}
+   {:db/id 12
+    :certainty/score 50
+    :certainty/target 2}
+   {:db/id 13
+    :certainty/score 40
+    :certainty/target 3}
    ])
 
 
@@ -252,6 +263,39 @@
            id]
           )]])))
 
+(defn slider [attr conn id]
+  (let [itm (pull conn '[*] id)]
+    (fn [attr conn id]
+      [:div
+       [:input {:type "range"
+                :style {:display "flex"}
+                :name "start"
+                :value (get @itm attr 0)
+                :min 0
+                :max 100
+                :step 1
+                :on-change (fn [e]
+                             (do #_(js/alert
+                                    (js/parseInt (-> e .-target .-value)))
+                                 (d/transact! conn [{:db/id id attr
+                                                     (js/parseInt (-> e .-target .-value))}])))}]])))
+
+(defn basic-node [conn i]
+  (let [certainty (q conn '[:find [?cert-id] 
+                            :in $ ?itemid
+                            :where [?cert-id :certainty/target ?itemid ]
+                            ]
+                     (:db/id i))]
+    (fn []
+      [:div
+
+       (str (:db/id i) " "
+            (pr-str (or (:logic/title i)
+                        (:node/title i))))
+
+       (if-let [[cid] @certainty]
+         [slider :certainty/score conn cid])])))
+
 
 (defn nodes-render [conn]
       (let [n (q conn '[:find ?eid ?val ?text 
@@ -287,13 +331,34 @@
                           :width "150px"
                           :grid-area "items"}}
             (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
-              [:div
-               {:draggable true}
-               (str (:db/id i) " "
-                    (pr-str (or (:logic/title i)
-                                (:node/title i))))])]]
+              ^{:key i}[basic-node conn i])]]
           )))
 
 
 (defcard-rg nodestest
   [nodes-render lconn])
+
+
+
+
+
+
+
+(defn term [conn i]
+  (let [t (posh/pull conn '[*] i)]
+    (fn [conn i]
+      [:div {:style {:display "flex"
+                     :color "white"
+                                        ;  :align-items "flex-start"
+                     :justify-content "space-around"
+                     :opacity (if-let [c  (:prop/certainty @t)] 
+                                (/ c 9)
+                                1)
+                     :background-color "black"}}
+
+       [:p  {:style {}}
+        (:prop/text @t)]
+       [:div {:style {:display "flex"
+                      }}
+        [slider :prop/certainty conn @t]]])))
+
