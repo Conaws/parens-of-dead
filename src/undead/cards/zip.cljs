@@ -2,7 +2,7 @@
   (:require [clojure.pprint :refer [pprint]]
             [clojure.zip :as z]
             [datascript.core :as d]
-            [posh.reagent :as posh :refer [posh!]]
+            [posh.core :as posh :refer [posh!]]
             [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 

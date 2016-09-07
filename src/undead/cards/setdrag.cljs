@@ -1,6 +1,6 @@
 (ns undead.cards.setdrag
   (:require [datascript.core :as d]
-            [posh.reagent :as posh :refer [posh! pull q]] 
+            [posh.core :as posh :refer [posh! pull q]] 
             [reagent.core :as r])
   (:require-macros
    [cljs.test :refer [is testing]]
@@ -118,51 +118,15 @@
 
 
 
-(def schema {:set/children {:db/valueType :db.type/ref
+(def schema {:set/members {:db/valueType :db.type/ref
                              :db/cardinality :db.cardinality/many}
-             :set/order  {:db/cardinality :db.cardinality/one}})
+             :logic/not  {:db/valueType :db.type/ref
+                          :db/cardinality :db.cardinality/one}})
 
 
-(defonce lconn (d/create-conn schema))
+(def lconn (d/create-conn schema))
 (posh! lconn)
 
-
-(def sample-nodes
-  [{:db/id 1
-    :node/title "A"}
-   {:db/id 2
-    :node/title "A1"}
-   {:db/id 3
-    :node/title "B"}
-   {:db/id 4
-    :node/title "B1"}
-   {:db/id 5
-    :node/title "C"}
-   {:db/id 6
-    :node/title "C1"}])
-
-
-
-#_(def sample-logic [{:db/id 7
-                   :logic/type :not=
-                   :set/members #{1 3}}
-                  {:db/id 8
-                   :logic/type :not=
-                   :set/members #{2 4}}
-                  {:db/id 9
-                   :logic/type :if
-                   :logic/if  #{8}
-                   :logic/then #{7}}
-                  {:db/id 10
-                   :logic/type :not=
-                   :set/members #{4 6}}
-                  {:db/id 11
-                   :logic/type :not=
-                   :set/members #{3 5}}
-                  {:db/id 12
-                   :logic/type :if
-                   :logic/if  #{10}
-                   :logic/then #{11}}])
 
 (def sample-nodes2
   [{:db/id      1
@@ -174,7 +138,7 @@
    {:db/id      4
     :logic/type :not
     :node/title "Not A"
-    :wrapper/of 1}
+    :logic/not 1}
    {:db/id       5
     :logic/type  :and
     :logic/title  "A and B"
@@ -187,7 +151,7 @@
    {:db/id 7
     :logic/type :or
     :logic/title "(B or C)"
-    :set/members {2 3}}
+    :set/members #{2 3}}
    {:db/id 8
     :node/title "D"}
    {:db/id 9
@@ -203,11 +167,28 @@
 (d/transact! lconn sample-nodes2)
 
 
+
+(defn and-render [conn id]
+  (let [members (pull conn '[:node/title {:set/members ...}] id)]
+    (fn []
+      [:div.bblack {:style
+             {:background-color "#fefefe"}}
+       [:h1 "∧"]
+       (pr-str @members)])
+    ))
+
+
+
+
+
 (defn nodes-render [conn]
-      (let [n (q '[:find ?eid ?val ?text 
+      (let [n (q conn '[:find ?eid ?val ?text 
                    :where [?eid ?val ?text ]]
-                 conn)]
-        (fn []
+                 )
+            all-ents (q conn '[:find (pull ?e [*])
+                          :where  [?e]]
+                       ) ]
+        (fn [conn]
           [:div
            {:style
                       {:display "grid"
@@ -220,8 +201,15 @@
 
 "
                        }}
-           (pr-str n)
-
+           [:div {:display "flex"
+                  :flex-flow "column wrap"} 
+            (for [[i] @all-ents]
+              (condp = (:logic/type i)
+                :and [and-render conn (:db/id i)]
+                :or [:div
+                     [:h1 "or"]
+                     (pr-str i)]
+                [:div "not and"]))]
            [:button {:style {:grid-area "other"}}]
            [:div {:style {:border "2px solid blue"
                           :display "flex"
@@ -230,12 +218,12 @@
                           :color "white"
                           :overflow "scroll"
                           :flex-flow "column wrap"
-          ;                :width "50px"
+                          :width "150px"
                           :grid-area "items"}}
-            (for [i @n]
+            (for [[i] @all-ents]
               [:div
                {:draggable true}
-               (pr-str i)])]]
+               (pr-str (:node/title i))])]]
           )))
 
 
