@@ -4,7 +4,7 @@
    [cljs.test  :refer [testing is]]
    [devcards.core :refer [deftest defcard-rg]]))
 
-(defonce app-state (r/atom {:list (vec (range 11))
+(defonce app-state (r/atom {:list (vec (take 11 "abcdefghijkl"))
                        :over -1
                        :dragging false}))
 
@@ -48,27 +48,32 @@
    ;           :class-name "placeholder"
               :style {:display
                       (if (= v (:dragging @s))
-                        "none")
+                        "none"
+                        )
                       :background-color "green"
+                      :border "2px solid white"
+                      :margin "5px"
                       :opacity
                       (if (:dragging @s)
                         "0.9"
-                        "1")
-                      }
+                        "1")}
               :on-drag-enter (fn [e]
                                (swap! s update :list (fn [l]
                                                          (splice :placeholder
                                                                  l
-                                                                 i)))
-                               )
+                                                                 i))))
               :on-drag-start (fn [e]
-                               (swap! s assoc :dragging v)
-                               )
+                               (swap! s assoc :dragging v
+                                      :oldlist (:list @s)))
               :on-drag-end (fn [e]
-                             (do
+                             #_(do
                                (swap! s update :list (fn [l]
-                                                       (swap-in-vector l :placeholder (:dragging @s))))
-                               (swap! s assoc :over false
+                                                       (swap-in-vector
+                                                        l
+                                                        :placeholder
+                                                        (:dragging @s))))
+                               (swap! s assoc
+                                      :over false
                                       :dragging false)))}
          v]))) 
 
@@ -87,11 +92,21 @@
 
 
 
-(defn list-render [state]
-    (fn [state]
-      [:ol
-       (for [[i v] (map-indexed vector (:list @state))]
-        ^{:key i}[listitem i v state])]))
+(defn list-render [s]
+    (fn [s]
+      [:ol {:style {:border "2px solid blue"}
+            :on-drag-end  (fn [e]
+                           (do
+                             (swap! s update :list (fn [l]
+                                                     (swap-in-vector
+                                                      l
+                                                      :placeholder
+                                                      (:dragging @s))))
+                             (swap! s assoc
+                                    :over false
+                                    :dragging false)))}
+       (for [[i v] (map-indexed vector (:list @s))]
+        ^{:key i}[listitem i v s])]))
 
 (defcard-rg listcard
   [list-render app-state]
@@ -101,22 +116,8 @@
 
 
 
-(defn ainc [arr x] 
-  (let [v (clj->js arr)
-        xpos (.indexOf v x)]
-    (if-let [swapval (aget v (dec xpos))]
-      (do (aset v xpos swapval)
-          (aset v (dec xpos) x)
-          (js->clj v))
-      arr)))
 
-(defn adec [arr x] 
-  (let [v (clj->js arr)
-        xpos (.indexOf v x)]
-    (if-let [swapval (aget v (inc xpos))]
-      (do (aset v xpos swapval)
-          (aset v (inc xpos) x)
-          (js->clj v))
-      arr)))
+
+
 
 
