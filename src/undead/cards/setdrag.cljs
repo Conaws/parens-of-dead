@@ -143,7 +143,7 @@
 
 
 
-(def sample-logic [{:db/id 7
+#_(def sample-logic [{:db/id 7
                    :logic/type :not=
                    :set/members #{1 3}}
                   {:db/id 8
@@ -164,11 +164,43 @@
                    :logic/if  #{10}
                    :logic/then #{11}}])
 
+(def sample-nodes2
+  [{:db/id      1
+    :node/title "A"}
+   {:db/id      2
+    :node/title "B"}
+   {:db/id      3
+    :node/title "C"}
+   {:db/id      4
+    :logic/type :not
+    :node/title "Not A"
+    :wrapper/of 1}
+   {:db/id       5
+    :logic/type  :and
+    :logic/title  "A and B"
+    :set/members #{1 3}}
+   {:db/id      6
+    :logic/type :if-then
+    :logic/title "If (A and B) then C"
+    :logic/if   #{5}
+    :logic/then #{3}}
+   {:db/id 7
+    :logic/type :or
+    :logic/title "(B or C)"
+    :set/members {2 3}}
+   {:db/id 8
+    :node/title "D"}
+   {:db/id 9
+    :logic/type :or
+    :logic/title "(B or C) or A"
+    :set/members #{1 7}}
+   {:db/id 10
+    :logic/type :if-then
+    :logic/title "If ((B or C) or A) then D"}
+   ])
 
 
-
-(d/transact! lconn sample-nodes)
-(d/transact! lconn sample-logic)
+(d/transact! lconn sample-nodes2)
 
 
 (defn nodes-render [conn]
@@ -179,7 +211,7 @@
           [:div
            {:style
                       {:display "grid"
-                       :background-color "blue"
+;                       :background-color "blue"
                        :grid-row-gap "5px"
                        :grid-template-areas "
 'other .. .. .. items'
@@ -189,9 +221,12 @@
 "
                        }}
            (pr-str n)
+
            [:button {:style {:grid-area "other"}}]
            [:div {:style {:border "2px solid blue"
                           :display "flex"
+                          :background-color "blue"
+                          :padding "5px"
                           :color "white"
                           :overflow "scroll"
                           :flex-flow "column wrap"
