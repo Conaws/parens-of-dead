@@ -35,11 +35,16 @@
                                                     :source-map true}}
                                         {:id "devcards"
                                          :source-paths ["src"]
-                                         :figwheel { :devcards true } ;; <- note this
+                                         :figwheel { :devcards true
+                                                    } ;; <- note this
                                          :compiler { :main  undead.cards
                                                     :asset-path "js/devcards"
                                                     :output-to  "resources/public/js/compiled/devcards.js"
                                                     :output-dir "resources/public/js/devcards"
                                                     :source-map-timestamp true }}
 
-                                        ]}}})
+                                        ]}
+                   :figwheel {
+                              :css-dirs ["resources/public/css"]
+                              }
+                   }})

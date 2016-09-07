@@ -1,0 +1,83 @@
+.bblack {
+    border: 2px solid black;
+}
+
+.cell2{
+    height: 200px;
+    background-color: red;
+    border: 1px solid;
+    width: 100px;
+    transition-property: background-color;
+    transition-duration:  3s;
+    transition-timing-function: linear;
+    transition-delay: 0.1s;
+}
+
+.cell {
+  background-color: #444;
+  color: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  font-size: 150%;
+}
+
+.center {
+    align-items: center;
+    justify-content: center;
+}
+.flex {
+    display: flex;
+}
+
+.tall {
+    height: 700px;
+}
+
+.column {
+    width: 170px;
+    float: left;
+    padding-bottom: 100px;
+}
+.portlet {
+    margin: 0 1em 1em 0;
+    padding: 0.3em;
+}
+.portlet-header {
+    padding: 0.2em 0.3em;
+    margin-bottom: 0.5em;
+    position: relative;
+}
+.portlet-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    margin-top: -8px;
+}
+.portlet-content {
+    padding: 0.4em;
+}
+.portlet-placeholder {
+    border: 1px dotted black;
+    margin: 0 1em 1em 0;
+    height: 50px;
+}
+
+.small {
+    size: 5px;
+}
+
+#selectable .ui-selecting { background: #FECA40; }
+#selectable .ui-selected { background: #F39814; color: white; }
+
+#selectable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+#selectable li { margin: 3px; padding: 0.4em; font-size: 1.4em; height: 18px; }
+
+
+
+li.placeholder {background: rgb(255,240,120);}
+li.placeholder:before {
+  content: "Drop here";
+  color: rgb(225,210,90);
+}
+
+
