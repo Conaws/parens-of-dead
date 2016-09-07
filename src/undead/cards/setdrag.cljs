@@ -137,14 +137,14 @@
 
 (def sample-nodes2
   [{:db/id      1
-    :node/title "A"}
+    :node/title "All Men are Mortal"}
    {:db/id      2
-    :node/title "B"}
+    :node/title "Socrates is a Man"}
    {:db/id      3
-    :node/title "C"}
+    :node/title "Socrates is Mortal"}
    {:db/id      4
     :logic/type :not
-    :node/title "Not A"
+    :node/title "Not All Men are Mortal"
     :logic/not 1}
    {:db/id       5
     :logic/type  :and
@@ -349,11 +349,71 @@
 
 
 
+(defn barometer1
+  ([score] (barometer1 score 30))
+  ([score size]
+   [:div  {:style {:width  (str size "px")
+                   :height (str size "px")
+                   :border "2px solid black"
+              
+                   :border-radius  (str size "px")}}
+    [:div  {:style
+            {:background-color "black"
+             :width  (str size "px")
+             :height (str size "px")
+             :border-radius  (str size "px")
+             :opacity (str (/ score 100))}}
+     ]]))
+
+
+(defn barometer2
+  ([score] (barometer2 score 30))
+  ([score size]
+   [:div  {:style {:width  (str size "px")
+                   :height (str size "px")
+                   :border "2px solid black"
+                   :overflow "hidden"
+                   :border-radius  (str size "px")}}
+    [:div  {:style
+            {:background-color "black"
+             :width  (str score "%")
+             :height (str size "px")
+             }}
+     ]]))
+
+
+(defn barometer3
+  ([score] (barometer3 score 10 50))
+  ([score width]  (barometer3 score 10 width))
+  ([score height width]
+   [:div  {:style {:width  (str width "px")
+                   :height (str height "px")
+                   :border "2px solid black"
+                   :background-color "blue"
+                   :overflow "hidden"
+                   }}
+    [:div  {:style
+            {:background-color "white"
+             :width  (str score "%")
+             :height "100%"
+             }}
+     ]]))
 
 
 
+(defcard-rg barometers 
+  [:div
+   [barometer1 5]
+   [barometer1 25 50]
+   [barometer2 50 50]
+   [barometer2 75 50]
+   [barometer3 75 10 300]
+   [barometer3 75 10 300]
+   [barometer3 90 10 300]
+   ])
 
-(defn term [conn i]
+
+#_(defn term [conn i]
   (let [t (posh/pull conn '[*] i)]
     (fn [conn i]
       [:div {:style {:display "flex"
