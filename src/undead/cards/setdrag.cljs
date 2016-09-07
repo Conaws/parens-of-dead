@@ -1,7 +1,8 @@
 (ns undead.cards.setdrag
   (:require [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]] 
-            [reagent.core :as r])
+            [reagent.core :as r]
+            [clojure.set :as set])
   (:require-macros
    [cljs.test :refer [is testing]]
    [devcards.core :refer [defcard-rg deftest]]))
@@ -169,17 +170,31 @@
 
 
 (defn and-render [conn id]
-  (let [members (pull conn '[:node/title {:set/members ...}] id)]
+  (let [node (pull conn '[:node/title {:set/members ...}] id)]
     (fn []
       [:div.bblack {:style
-             {:background-color "#fefefe"}}
-       [:h1 "∧"]
-       (pr-str @members)])
+                    {:display "flex"
+                     :background-color "#f1f1f1"
+                     :justify-content "space-between"
+                    }}
+       [:h1 "∧: AND"]
+       (for [m (:set/members @node)]
+         [:button (:node/title m)])])
     ))
 
-
-
-
+(defn or-render [node]
+    (fn [node]
+      [:div.bblack {:style
+                    {:display "flex"
+                     :background-color "#f1f1f1"
+                     :justify-content "space-between"
+                     }}
+       [:button (:db/id node)]
+       [:div.flex.center
+        [:h1 "v: OR"]
+        (for [m (:set/members node)]
+          [:button (pr-str m)])]])
+    )
 
 (defn nodes-render [conn]
       (let [n (q conn '[:find ?eid ?val ?text 
@@ -206,10 +221,8 @@
             (for [[i] @all-ents]
               (condp = (:logic/type i)
                 :and [and-render conn (:db/id i)]
-                :or [:div
-                     [:h1 "or"]
-                     (pr-str i)]
-                [:div "not and"]))]
+                :or [or-render i]
+                [:div (pr-str i)]))]
            [:button {:style {:grid-area "other"}}]
            [:div {:style {:border "2px solid blue"
                           :display "flex"
