@@ -127,50 +127,80 @@
 (posh! lconn)
 
 
-(def  nodes
+(def sample-nodes
   [{:db/id 1
-    :node/text "First Node"}
+    :node/title "A"}
    {:db/id 2
-    :node/text "Second"}
+    :node/title "A1"}
    {:db/id 3
-    :node/text "3rd node"}
+    :node/title "B"}
    {:db/id 4
-    :node/text "4nod"}
+    :node/title "B1"}
    {:db/id 5
-    :node/text "fifth node"}
+    :node/title "C"}
    {:db/id 6
-    :node/text "node 6"}
-   {:db/id 7
-    :node/text "node 7"}])
+    :node/title "C1"}])
 
 
 
-
-(def set-example [{:db/id 8
-                   :set/type :set/union
+(def sample-logic [{:db/id 7
+                   :logic/type :not=
                    :set/members #{1 3}}
+                  {:db/id 8
+                   :logic/type :not=
+                   :set/members #{2 4}}
                   {:db/id 9
-                   :set/type :set/difference
-                   :set/outer #{1}
-                   :set/removed #{2}}])
+                   :logic/type :if
+                   :logic/if  #{8}
+                   :logic/then #{7}}
+                  {:db/id 10
+                   :logic/type :not=
+                   :set/members #{4 6}}
+                  {:db/id 11
+                   :logic/type :not=
+                   :set/members #{3 5}}
+                  {:db/id 12
+                   :logic/type :if
+                   :logic/if  #{10}
+                   :logic/then #{11}}])
 
 
 
 
-(d/transact! lconn nodes)
+(d/transact! lconn sample-nodes)
+(d/transact! lconn sample-logic)
 
 
 (defn nodes-render [conn]
-      (let [n (q '[:find ?eid ?text 
-                   :where [?eid :node/text ?text ]]
+      (let [n (q '[:find ?eid ?val ?text 
+                   :where [?eid ?val ?text ]]
                  conn)]
         (fn []
           [:div
+           {:style
+                      {:display "grid"
+                       :background-color "blue"
+                       :grid-row-gap "5px"
+                       :grid-template-areas "
+'other .. .. .. items'
+'.. .. .. .. items'
+'.. .. .. .. items'
+
+"
+                       }}
            (pr-str n)
-           (for [i @n]
-             [:div.cell
-              {:draggable true}
-              (pr-str i)])]
+           [:button {:style {:grid-area "other"}}]
+           [:div {:style {:border "2px solid blue"
+                          :display "flex"
+                          :color "white"
+                          :overflow "scroll"
+                          :flex-flow "column wrap"
+          ;                :width "50px"
+                          :grid-area "items"}}
+            (for [i @n]
+              [:div
+               {:draggable true}
+               (pr-str i)])]]
           )))
 
 
