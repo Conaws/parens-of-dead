@@ -13,6 +13,33 @@
     transition-delay: 0.1s;
 }
 
+
+
+
+
+.threeS {
+    transition-property: width;
+    transition-duration: 3s;
+
+}
+
+.oneS {
+    transition-property: width;
+    transition-duration: 1s;
+
+}
+
+
+.column1 {
+    width: 500px;
+}
+
+.column2 {
+    width: 10px;
+    overflow: hidden;
+}
+
+
 .cell {
   background-color: #444;
   color: #fff;

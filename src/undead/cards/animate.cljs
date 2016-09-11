@@ -42,3 +42,21 @@
 (defcard-rg test
   [rdelay])
 
+
+(def slidatom (r/atom {:hover false}))
+
+(defn slidein []
+  (let [slidatom (r/atom {:hover false})]
+    (fn []
+      [:div.oneS.tall.bblack
+       {:class (if (:hover @slidatom) "column1" "column2" )
+        :on-mouse-enter #(swap! slidatom assoc :hover true)
+        :on-mouse-leave #(swap! slidatom assoc :hover false)
+        }
+       (pr-str @slidatom)
+       ]))
+  )
+
+(defcard-rg slidein-demo
+  [slidein])
+
