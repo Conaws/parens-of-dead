@@ -1,7 +1,7 @@
 (ns undead.cards.animate
-  (:require [reagent.core :as r])
+  (:require [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
+            [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]]))
-
 
 (defn css-test [state]
   (fn [state]
@@ -59,4 +59,53 @@
 
 (defcard-rg slidein-demo
   [slidein])
+
+
+(reg-event-db
+ :assoc
+ (fn [db [_ p v]]
+   (assoc-in db p v)))
+
+(reg-event-db
+ :show-panel
+ (fn [db _]
+   (assoc-in db [:helm-panel :showing] true)))
+
+
+(defn show-panel []
+  (dispatch [:assoc [:helm-panel :showing] true]))
+
+(defn hide-panel []
+  (dispatch [:assoc [:helm-panel :showing] false]))
+
+(reg-sub
+ :helm-panel
+ (fn [db _]
+   (:helm-panel db)))
+
+
+(defn hover [in out]
+  {:on-mouse-enter in
+   :on-mouse-leave out
+   })
+
+; (dispatch [:show-panel])
+
+(defn helm-panel []
+  (let [panel (subscribe [:helm-panel])]
+    (fn []
+      [:div.oneS.bblack.tall
+       (merge (hover show-panel
+                     hide-panel
+                     )
+              {:class (if (:showing @panel) "column2" "column1")})
+       (pr-str @panel)]
+      )))
+
+
+
+
+(defcard-rg slide-up
+  [helm-panel])
+
 
