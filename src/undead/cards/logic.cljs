@@ -1,8 +1,10 @@
 (ns undead.cards.logic
   (:require 
-            [datascript.core :as d]
-            [posh.core :as posh :refer [posh! pull q]]
-            [reagent.core :as r])
+   [datascript.core :as d]
+   [posh.core :as posh :refer [posh! pull q]]
+   [re-com.core :as rc :refer [md-circle-icon-button]]
+   [reagent.core :as r]
+   [reagent.core :as reagent])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 
 (enable-console-print!)
@@ -300,9 +302,65 @@
    ])
 
 
+(def sample-nodes2
+  [{:db/id      1
+    :node/type :atom
+    :node/title "All Men are Mortal"}
+   {:db/id      2
+    :node/type :atom
+    :node/title "Socrates is a Man"}
+   {:db/id      3
+    :node/type :atom
+    :node/title "Socrates is Mortal"}
+   {:db/id      4
+    :node/type :not
+    :node/title "Not All Men are Mortal"
+    :logic/not 1}
+   {:db/id       5
+    :node/type  :and
+    :logic/title  "A and B"
+    :set/members #{1 2}}
+   {:db/id      6
+    :node/type :if
+    :logic/title "If (A and B) then C"
+    :logic/if   5
+    :logic/then 3
+    :set/members #{5 3}
+    }
+   {:db/id 7
+    :node/type :or
+    :logic/title "(B or C)"
+    :set/members #{2 3}}
+   {:db/id 8
+    :node/type :atom
+    :node/title "D"}
+   {:db/id 9
+    :node/type :or
+    :logic/title "(B or C) or A"
+    :set/members #{1 7}}
+   {:db/id 10
+    :node/type :if
+    :logic/title "If ((B or C) or A) then D"
+    :logic/if 9
+    :logic/then 8}
+   {:db/id 11
+    :node/type :certainty
+    :certainty/score 90
+    :certainty/target 1}
+   {:db/id 12
+    :node/type :certainty
+    :certainty/score 50
+    :certainty/target 2}
+   {:db/id 13
+    :node/type :certainty
+    :certainty/score 40
+    :certainty/target 3}
+   ])
 
 
-
+(def lconn2 (d/create-conn schema))
+(posh! lconn2)
+(d/transact! lconn2 sample-nodes2)
 
 
 (defn render-node [conn id]
@@ -312,7 +370,13 @@
                                :where [?e :set/members ?id]]
                         id)]
     (fn []
-      [:div (pr-str @n)
+      [:div.flex 
+       [md-circle-icon-button
+        :md-icon-name "YO"
+        :tooltip "hey?"
+        :on-click #()]
+       [:div (:node/title @n)]
+
        (if used-in
          [:sub
           [:button (pr-str (count @used-in))]])
@@ -321,14 +385,55 @@
       )))
 
 
-
 (defcard-rg node-test
-  [render-node lconn 1])
+  [render-node lconn2 1])
+
+
+
+
+(def icons
+  [{:id "zmdi-plus"    :label [:i {:class "zmdi zmdi-plus"}]}
+   {:id "zmdi-delete"  :label [:i {:class "zmdi zmdi-delete"}]}
+   {:id "zmdi-undo"    :label [:i {:class "zmdi zmdi-undo"}]}
+   {:id "zmdi-home"    :label [:i {:class "zmdi zmdi-home"}]}
+   {:id "zmdi-hourglass"    :label [:i {:class "zmdi zmdi-hourglass"}]}
+;   {:id "zmdi-group"    :label [:i {:class "zmdi zmdi-group"}]}
+   {:id "zmdi-filter-list"    :label [:i {:class "zmdi zmdi-filter-list"}]}
+   {:id "therefore"    :label [:i "∴"]}
+   {:id "zmdi-account" :label [:i {:class "zmdi zmdi-account"}]}
+   {:id "zmdi-info"    :label [:i {:class "zmdi zmdi-info"}]}])
 
 
 
 
 
+(defn main []
+  (let [selected-icon (r/atom (:id (first icons)))]
+    (fn []
+      [:div
+       [rc/v-box
+        :gap "8px"
+        :children [
+                   [rc/horizontal-bar-tabs
+                    :model selected-icon
+                    :tabs icons
+                    :on-change #(reset! selected-icon %)]
+                   [:div.rc-div-table-row
+                    "a"
+                    #_[rc/row-button
+                       :md-icon-name a]
+                    ]
+                   [:div.rc-div-table-row
+                    "a" ]]]
 
+       ]
+
+      ))
+  
+  )
+
+
+(defcard-rg recomtest
+  [main])
 
 

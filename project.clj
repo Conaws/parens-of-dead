@@ -14,7 +14,9 @@
                  [devcards "0.2.1-7"]
                  [reagent "0.6.0-SNAPSHOT"]
                  [posh "0.3.5"]
-                 [datascript "0.15.2"]]
+                 [datascript "0.15.2"]
+                 [re-frame "0.8.0"]
+                 [re-com "0.8.3"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"
