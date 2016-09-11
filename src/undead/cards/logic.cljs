@@ -305,6 +305,30 @@
 
 
 
+(defn render-node [conn id]
+  (let [n (posh/pull conn '[*] id)
+        used-in (posh/q conn '[:find ?e
+                               :in $ ?id
+                               :where [?e :set/members ?id]]
+                        id)]
+    (fn []
+      [:div (pr-str @n)
+       (if used-in
+         [:sub
+          [:button (pr-str (count @used-in))]])
+       ]
+
+      )))
+
+
+
+(defcard-rg node-test
+  [render-node lconn 1])
+
+
+
+
+
 
 
 
