@@ -437,3 +437,44 @@
   [main])
 
 
+(defn select-node []
+  (let [nodes (posh/q lconn2 '[:find ?e ?text
+                               :where [?e :node/title ?text]])
+        selection-id (r/atom nil)]
+    (fn []
+      (let [new-nodes (map (fn [[e t]]
+                             {:id e :label (str e ":  "t)}) @nodes)
+            sorted-nodes (sort-by :id new-nodes)]
+        [:div.flex
+        [rc/single-dropdown
+         :choices sorted-nodes
+         :placeholder "If this then that"
+         :filter-box? true
+         :width "200px"
+           :model selection-id
+           :on-change #(reset! selection-id %)]
+        #_[:div (pr-str new-nodes)]]))))
+
+
+  (defcard-rg selecttest
+    [select-node])
+
+
+(defn select-node2 []
+  (let [nodes (posh/q lconn2 '[:find [?e ...]
+                               :where [?e :node/title ?text]])
+        selection-id (r/atom {})]
+    (fn []
+      (let [new-nodes (map (fn [e]
+                             {:id e :label e}) @nodes)
+            sorted-nodes (sort-by :id new-nodes)]
+        [:div.flex.tall
+         [rc/single-dropdown
+          :choices sorted-nodes
+          :model selection-id
+          :on-change #(reset! selection-id %)]
+         #_[:div (pr-str new-nodes)]]))))
+
+
+(defcard-rg selecttest2
+  [select-node2])
