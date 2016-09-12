@@ -13,8 +13,21 @@
     transition-delay: 0.1s;
 }
 
+.atom {
+    background: url("http://us.123rf.com/450wm/asmati/asmati1606/asmati160604343/58986546-atom-sign-illustration-dark-gray-icon-on-transparent-background.jpg?ver=6");
+    background-size: cover;
+    height: 30px;
+    width: 30px;
+      }
 
-
+.symbol {
+    background: url("http://s3.amazonaws.com/static.graphemica.com/glyphs/i500s/000/005/822/original/269B-500x500.png?1275296121");
+    background-size: cover;
+    height: 30px;
+    width: 30px;
+    padding: -5px;
+    margin: -7px;
+}
 
 
 .threeS {
@@ -30,11 +43,11 @@
 }
 
 
-.column1 {
+.column2 {
     width: 500px;
 }
 
-.column2 {
+.column1 {
     width: 10px;
     overflow: hidden;
 }
@@ -55,6 +68,8 @@
 .flex {
     display: flex;
 }
+
+
 
 .tall {
     height: 700px;

@@ -489,34 +489,42 @@
     ))
 
 (def logic-types
-  [{:id :logic/atom    :label [:i "AND"]}
-   {:id :logic/if  :label [:i {:class "zmdi zmdi-delete"}]}
-   {:id :logic/and    :label [:i {:class "zmdi zmdi-undo"}]}
-   {:id :logic/or    :label [:i {:class "zmdi zmdi-home"}]}
+  [{:id :logic/atom    :label "⦿" }
+   {:id :logic/if  :label "⊩"}
+   {:id :logic/and  :label "AND"}
+   {:id :logic/or    :label "OR"}
    ])
 
 (defn node-input [conn]
   (let [editatom (r/atom "")
         selected-type (r/atom (:id (first logic-types)))]
     (fn []
-      [rc/v-box
+      [rc/h-box
        :align :center
        :justify :start
        :class "bblack"
-       :children [[rc/horizontal-bar-tabs
+       :gap "10px"
+       :children [[rc/vertical-bar-tabs
                    :model selected-type
                    :tabs logic-types
                    :on-change #(reset! selected-type %)]
-                  [rc/input-text
-                   :model editatom
-                   :placeholder "Add an Atom"
-                   :on-change #(reset! editatom %)]
-                  [rc/button
-                   :label "Add"
-                   :on-click #(add-atom conn editatom )]]
+                  (condp = @selected-type
+                    :logic/atom
+                    [v-box
+                     :children [[rc/input-text
+                                 :model editatom
+                                 :placeholder "Add an Atom"
+                                 :on-change #(reset! editatom %)]
+                                [rc/button
+                                 :label "Add"
+                                 :on-click #(add-atom conn editatom )]]]
+                    [:div (pr-str @selected-type)]
+                    )]
        ]
       ))
   )
+
+
 
 
 (defcard-rg inputtest
@@ -527,13 +535,15 @@
                           :where  [?e]]
                    )]
     [v-box
-     :children[
-               (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
+     :gap "20px"
+     :class "bblack"
+     :children (vec
+               (for [[i] (reverse (sort-by (fn [[i]] (:db/id i)) @all-ents))]
                  ^{:key (str i "b")}
 
                  [rc/box
-                  :child 
-                  [:div (pr-str i)]])]]))
+                  :child
+                  [:div (pr-str i)]]))]))
 
 (defcard-rg nodestest20
   [:div
