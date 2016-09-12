@@ -2,7 +2,7 @@
   (:require 
    [datascript.core :as d]
    [posh.core :as posh :refer [posh! pull q]]
-   [re-com.core :as rc :refer [md-circle-icon-button]]
+   [re-com.core :as rc :refer [md-circle-icon-button v-box h-box button input-text]]
    [reagent.core :as r]
    [reagent.core :as reagent])
   (:require-macros [devcards.core :refer [defcard-rg]]))
@@ -104,7 +104,7 @@
         (for [m (pop (vec (interleave (:set/members node) (repeat :or))))]
           (if (= m :or)
             [:div " or "]
-            [logic-node conn (:db/id m)])
+            ^{:key (str m "or")}[logic-node conn (:db/id m)])
           )])
     )
 
@@ -218,7 +218,7 @@
            [:div {:display "flex"
                   :flex-flow "column wrap"}
             (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
-              [logic-node conn (:db/id i)])]
+              ^{:key (str i "b")}[logic-node conn (:db/id i)])]
            [:div {:style {:border "2px solid blue"
                           :display "flex"
                           :background-color "blue"
@@ -229,11 +229,11 @@
                           :width "150px"
                           :grid-area "items"}}
             (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
-              ^{:key i}[basic-node conn i])]]
+              ^{:key (str i "a")}[basic-node conn i])]]
           )))
 
 
-(defcard-rg nodestest
+#_(defcard-rg nodestest
   [nodes-render lconn])
 
 
@@ -358,7 +358,7 @@
    ])
 
 
-(def lconn2 (d/create-conn schema))
+(defonce lconn2 (d/create-conn schema))
 (posh! lconn2)
 (d/transact! lconn2 sample-nodes2)
 
@@ -488,27 +488,56 @@
     (reset! editatom "")
     ))
 
-
+(def logic-types
+  [{:id :logic/atom    :label [:i "AND"]}
+   {:id :logic/if  :label [:i {:class "zmdi zmdi-delete"}]}
+   {:id :logic/and    :label [:i {:class "zmdi zmdi-undo"}]}
+   {:id :logic/or    :label [:i {:class "zmdi zmdi-home"}]}
+   ])
 
 (defn node-input [conn]
-  (let [editatom (r/atom "")]
+  (let [editatom (r/atom "")
+        selected-type (r/atom (:id (first logic-types)))]
     (fn []
-      [:div
-       [rc/input-text
-        :model editatom
-        :placeholder "Add an Atom"
-        :on-change #(reset! editatom %)]
-       [rc/button
-        :label "Add"
-        :on-click #(add-atom conn editatom )]
+      [rc/v-box
+       :align :center
+       :justify :start
+       :class "bblack"
+       :children [[rc/horizontal-bar-tabs
+                   :model selected-type
+                   :tabs logic-types
+                   :on-change #(reset! selected-type %)]
+                  [rc/input-text
+                   :model editatom
+                   :placeholder "Add an Atom"
+                   :on-change #(reset! editatom %)]
+                  [rc/button
+                   :label "Add"
+                   :on-click #(add-atom conn editatom )]]
        ]
-      
       ))
   )
 
-(defcard-rg nodestest2
+
+(defcard-rg inputtest
+  [node-input lconn2])
+
+(defn feed [conn]
+  (let [all-ents(q conn '[:find (pull ?e [* {:set/members ...}])
+                          :where  [?e]]
+                   )]
+    [v-box
+     :children[
+               (for [[i] (sort-by (fn [[i]] (:db/id i)) @all-ents)]
+                 ^{:key (str i "b")}
+
+                 [rc/box
+                  :child 
+                  [:div (pr-str i)]])]]))
+
+(defcard-rg nodestest20
   [:div
    [node-input lconn2]
-   [nodes-render lconn2]])
+   [feed lconn2]])
 
 
