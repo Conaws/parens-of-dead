@@ -466,9 +466,11 @@
         selection-id (r/atom {})]
     (fn []
       (let [new-nodes (map (fn [e]
-                             {:id e :label e}) @nodes)
+                             {:id e :label [:span e [:span
+                                                  {:on-mouse-enter #(print "hey") }
+                                                  "x"]]}) @nodes)
             sorted-nodes (sort-by :id new-nodes)]
-        [:div.flex.tall
+        [:div.flex
          [rc/single-dropdown
           :choices sorted-nodes
           :model selection-id
@@ -478,3 +480,35 @@
 
 (defcard-rg selecttest2
   [select-node2])
+
+
+(defn add-atom [conn editatom]
+  (do
+    (d/transact conn [{:db/id -1 :node/title @editatom}])
+    (reset! editatom "")
+    ))
+
+
+
+(defn node-input [conn]
+  (let [editatom (r/atom "")]
+    (fn []
+      [:div
+       [rc/input-text
+        :model editatom
+        :placeholder "Add an Atom"
+        :on-change #(reset! editatom %)]
+       [rc/button
+        :label "Add"
+        :on-click #(add-atom conn editatom )]
+       ]
+      
+      ))
+  )
+
+(defcard-rg nodestest2
+  [:div
+   [node-input lconn2]
+   [nodes-render lconn2]])
+
+
