@@ -552,10 +552,8 @@
    [feed lconn2]])
 
 
-(defn multi-drop []
-  (let [nodes (posh/q lconn2 '[:find ?e ?text ?ty
-                               :where [?e :node/title ?text]
-                               [?e :node/type ?ty]])
+(defn multi-drop1 [nodes]
+  (let [nodes nodes
         selections (r/atom [])
         selection-id (r/atom nil)]
     (fn []
@@ -566,28 +564,80 @@
                                  :group (str ty) }
                                 )) @nodes)
             sorted-nodes (sort-by :group new-nodes)]
-        [:div.flex
-         [:div (map (fn [e]
-                      [:div.well
-                       e
-                       [rc/button
-                        :on-click #(reset! selections
-                                           (vec (remove #{e} @selections ))
-                                           )
-                       :label 
-                        "X"]
-                       ]
-                      )  @selections)]
-         [rc/single-dropdown
-          :choices sorted-nodes
-          :placeholder "If this then that"
-          :filter-box? true
-          :width "200px"
-          :model selection-id
-          :on-change #(do
-                        (reset! selection-id nil)
-                        (swap! selections conj %))]
+        [v-box
+         :children [[h-box
+                     :children (vec (map (fn [e]
+                                          [:div.well
+                                           e
+                                           [:span.label.label-warning
+                                            {:on-click #(reset! selections
+                                                                (vec (remove #{e} @selections ))
+                                                                )}
+                                            "X"]
+                                           ]
+                                          )  @selections))]
+                    [rc/single-dropdown
+                     :choices sorted-nodes
+                     :placeholder "If this then that"
+                     :filter-box? true
+                     :width "200px"
+                     :model selection-id
+                     :on-change #(do
+                                   (reset! selection-id nil)
+                                   (swap! selections conj %))]]
          #_[:div (pr-str new-nodes)]]))))
 
+
+(defn select-text-nodes []
+  [multi-drop1
+   (posh/q lconn2 '[:find ?e ?text ?ty
+                    :where [?e :node/title ?text]
+                    [?e :node/type ?ty]])])
+
+
 (defcard-rg multi
-  [multi-drop])
+  [select-text-nodes])
+
+
+
+(defn multi-drop [conn]
+  (let [nodes (posh/q conn '[:find [(pull ?e [*] ) ...]
+                               :where [?e]])
+        selections (r/atom [])
+        selection-id (r/atom nil)]
+    (fn []
+      (let [new-nodes (keep (fn [{e :db/id :as m}]
+                              (if (not ((set @selections)
+                                        e))
+                                {:id e :label (pr-str m)
+                                 :group (str (:node/type m)) }
+                                )) @nodes)
+            sorted-nodes (sort-by :group new-nodes)]
+  ;      [:div (pr-str @nodes)]
+
+        [v-box
+         :children [[h-box
+                     :children (vec (map (fn [e]
+                                          [:div.well
+                                           e
+                                           [:span.label.label-warning
+                                            {:on-click #(reset! selections
+                                                                (vec (remove #{e} @selections ))
+                                                                )}
+                                            "X"]
+                                           ]
+                                          )  @selections))]
+                    [rc/single-dropdown
+                     :choices sorted-nodes
+                     :placeholder "If this then that"
+                     :filter-box? true
+                     :width "200px"
+                     :model selection-id
+                     :on-change #(do
+                                   (reset! selection-id nil)
+                                   (swap! selections conj %))]]
+         #_[:div (pr-str new-nodes)]]))))
+
+
+(defcard-rg multitest2
+  [multi-drop lconn2])
