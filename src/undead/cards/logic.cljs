@@ -628,9 +628,12 @@
                                            ]
                                           )  @selections))]
                     [rc/single-dropdown
-                     :choices sorted-nodes
+                     :choices @nodes
                      :placeholder "If this then that"
                      :filter-box? true
+                     :id-fn :db/id
+                     :label-fn #(pr-str %)
+                     :group-fn #(pr-str (:node/type %))
                      :width "200px"
                      :model selection-id
                      :on-change #(do
