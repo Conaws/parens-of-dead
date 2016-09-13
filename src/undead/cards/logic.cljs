@@ -599,9 +599,29 @@
   [select-text-nodes])
 
 
+(defn w-spaces [s]
+  (interleave (repeat " ") s))
+
+
+(defn node-label [n]
+  (condp = (:node/type n)
+    :atom (str (:db/id n) ":  " (:node/title n))
+    :not (str (:db/id n) ":  ~" (:db/id (:logic/not n)))
+    :and (apply str (w-spaces (map :db/id (:set/members n))))
+    :or (apply str (w-spaces (map :db/id (:set/members n))))
+    :certainty nil
+    (pr-str n))
+  )
+
 
 (defn multi-drop [conn]
-  (let [nodes (posh/q conn '[:find [(pull ?e [*] ) ...]
+  (let [nodes (posh/q conn '[:find [(pull ?e [:node/title
+                                              :node/type
+                                              :logic/not
+                                              :logic/if
+                                              :logic/then
+                                              :db/id
+                                              {:set/members 3}] ) ...]
                                :where [?e]])
         selections (r/atom [])
         selection-id (r/atom nil)]
@@ -612,7 +632,8 @@
                                 {:id e :label (pr-str m)
                                  :group (str (:node/type m)) }
                                 )) @nodes)
-            sorted-nodes (sort-by :group new-nodes)]
+            sorted-nodes (sort-by :group new-nodes)
+            sort-2 (sort-by :node/type @nodes)]
   ;      [:div (pr-str @nodes)]
 
         [v-box
@@ -628,12 +649,12 @@
                                            ]
                                           )  @selections))]
                     [rc/single-dropdown
-                     :choices @nodes
+                     :choices sort-2
                      :placeholder "If this then that"
                      :filter-box? true
                      :id-fn :db/id
-                     :label-fn #(pr-str %)
-                     :group-fn #(pr-str (:node/type %))
+                     :label-fn node-label
+                     :group-fn #(str (:node/type %))
                      :width "200px"
                      :model selection-id
                      :on-change #(do
