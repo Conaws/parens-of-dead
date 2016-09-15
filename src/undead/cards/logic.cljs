@@ -1,10 +1,10 @@
 (ns undead.cards.logic
-  (:require 
-   [datascript.core :as d]
-   [posh.core :as posh :refer [posh! pull q]]
-   [re-com.core :as rc :refer [md-circle-icon-button v-box h-box button input-text]]
-   [reagent.core :as r]
-   [reagent.core :as reagent])
+  (:require [datascript.core :as d]
+            [posh.core :as posh :refer [posh! pull q]]
+            [undead.subs :as subs :refer [qe]]
+            [re-com.core :as rc :refer [h-box md-circle-icon-button v-box]]
+            [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
+            [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 
 (enable-console-print!)
@@ -485,7 +485,9 @@
 
 (defn add-atom [conn editatom]
   (do
-    (d/transact conn [{:db/id -1 :node/title @editatom}])
+    (d/transact conn [{:db/id -1
+                       :node/type :atom
+                       :node/title @editatom}])
     (reset! editatom "")
     ))
 
@@ -626,14 +628,11 @@
         selections (r/atom [])
         selection-id (r/atom nil)]
     (fn []
-      (let [new-nodes (keep (fn [{e :db/id :as m}]
-                              (if (not ((set @selections)
-                                        e))
-                                {:id e :label (pr-str m)
-                                 :group (str (:node/type m)) }
-                                )) @nodes)
-            sorted-nodes (sort-by :group new-nodes)
-            sort-2 (sort-by :node/type @nodes)]
+      (let [nodes  (keep (fn [m]
+                           (if (not ((set @selections)
+                                     (:db/id m)))
+                             m)) @nodes)
+            sort-2 (sort-by :node/type nodes)]
   ;      [:div (pr-str @nodes)]
 
         [v-box
@@ -658,10 +657,108 @@
                      :width "200px"
                      :model selection-id
                      :on-change #(do
-                                   (reset! selection-id nil)
+                                   #_(reset! selection-id nil)
                                    (swap! selections conj %))]]
          #_[:div (pr-str new-nodes)]]))))
 
 
 (defcard-rg multitest2
   [multi-drop lconn2])
+
+
+(reg-event-db
+ :update-in
+ (fn [db [_ p f]]
+   (update-in db p f)))
+
+(reg-sub
+ :get-in
+ (fn [db [_ p]]
+   (get-in db p)))
+
+
+(dispatch [:assoc [:selections] []])
+(print (random-uuid))
+
+(defn conj-in-path [p v]
+  (dispatch [:update-in p (fn [e] (conj e v))]))
+
+
+(defn multi-drop-rf [conn]
+  (let [nodes (posh/q conn '[:find [(pull ?e [:node/title
+                                              :node/type
+                                              :logic/not
+                                              :logic/if
+                                              :logic/then
+                                              :db/id
+                                              {:set/members 3}] ) ...]
+                               :where [?e]])
+        selections (subscribe [:get-in [:selections]])
+        selection-id (r/atom nil)]
+    (fn []
+      (let [nodes  (keep (fn [m]
+                           (if (not ((set @selections)
+                                     (:db/id m)))
+                             m)) @nodes)
+            sort-2 (sort-by :node/type nodes)]
+        [v-box
+         :children [[h-box
+                     :children (vec (map (fn [e]
+                                          [:div.well
+                                           e
+                                           [:span.label.label-warning
+                                            {:on-click #(dispatch [:assoc [:selections]
+                                                                   (vec (remove #{e} @selections))]
+                                                                )}"X"]]) @selections))]
+                    [:div (pr-str selections)]
+                    [rc/single-dropdown
+                     :choices sort-2
+                     :placeholder "If this then that"
+                     :filter-box? true
+                     :id-fn :db/id
+                     :label-fn node-label
+                     :group-fn #(str (:node/type %))
+                     :width "200px"
+                     :model selection-id
+                     :on-change #(do
+                                   (conj-in-path [:selections] %))]]]))))
+
+
+(defcard-rg addtest
+  [multi-drop-rf lconn2])
+
+
+(defn simple-node [conn id]
+  [:div
+   [:h1.row 
+    (pr-str (d/entity @conn
+                      id))]
+   [:div.row (pr-str @(subs/node-parents conn id))]
+   [:div.row (pr-str @(subs/node-children conn id))]
+   ])
+
+
+(defcard-rg simpletest
+  [simple-node lconn2 1])
+
+
+(defn simple-nodes [conn]
+  (fn [conn]
+    [:div
+     (for [n @(subs/node-feed conn)]
+       ^{:key (subs/e n)} [simple-node conn n])]))
+
+(defn simpler-nodes [conn]
+  (let [nodes (subs/all-nodes conn)]
+    (fn []
+      [:div
+       (for [i @nodes]
+         ^{:key (str i "b")}
+         [logic-node conn i])])))
+
+(defcard-rg simplestest
+  [:div
+   [node-input lconn2]
+   [simple-nodes lconn2]])
+
+

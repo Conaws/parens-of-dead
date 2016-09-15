@@ -1,0 +1,131 @@
+(ns undead.subs
+  (:require
+   [datascript.core :as d]
+   [reagent.core :as r]
+   [undead.util :refer [ssolo]]
+   [posh.core :as posh])
+   (:require-macros [undead.subs :refer [deftrack]]))
+
+
+
+(def schema {:set/members {:db/valueType :db.type/ref
+                           :db/cardinality :db.cardinality/many}
+             :certainty/target  {:db/valueType :db.type/ref
+                                 :db/cardinality :db.cardinality/one}
+             :logic/not  {:db/valueType :db.type/ref
+                          :db/cardinality :db.cardinality/one}
+             :logic/then  {:db/valueType :db.type/ref
+                           :db/cardinality :db.cardinality/one}
+             :logic/if  {:db/valueType :db.type/ref
+                         :db/cardinality :db.cardinality/one}})
+
+
+
+(def sample-nodes2
+  [{:db/id      1
+    :node/type :atom
+    :node/title "All Men are Mortal"}
+   {:db/id      2
+    :node/type :atom
+    :node/title "Socrates is a Man"}
+   {:db/id      3
+    :node/type :atom
+    :node/title "Socrates is Mortal"}
+   {:db/id      4
+    :node/type :not
+    :node/title "Not All Men are Mortal"
+    :logic/not 1}
+   {:db/id       5
+    :node/type  :and
+    :logic/title  "A and B"
+    :set/members #{1 2}}
+   {:db/id      6
+    :node/type :if
+    :logic/title "If (A and B) then C"
+    :logic/if   5
+    :logic/then 3
+    :set/members #{5 3}
+    }
+   {:db/id 7
+    :node/type :or
+    :logic/title "(B or C)"
+    :set/members #{2 3}}
+   {:db/id 8
+    :node/type :atom
+    :node/title "D"}
+   {:db/id 9
+    :node/type :or
+    :logic/title "(B or C) or A"
+    :set/members #{1 7}}
+   {:db/id 10
+    :node/type :if
+    :logic/title "If ((B or C) or A) then D"
+    :logic/if 9
+    :logic/then 8}
+   {:db/id 11
+    :node/type :certainty
+    :certainty/score 90
+    :certainty/target 1}
+   {:db/id 12
+    :node/type :certainty
+    :certainty/score 50
+    :certainty/target 2}
+   {:db/id 13
+    :node/type :certainty
+    :certainty/score 40
+    :certainty/target 3}
+   ])
+
+
+
+(defprotocol Eid
+  "A protocol for retrieving an object's entity id."
+  (e [_] "identifying id for a value"))
+
+(extend-protocol Eid
+  number
+  (e [n] n)
+
+  cljs.core.PersistentHashMap
+  (e [ent] (:db/id ent))
+
+  cljs.core.PersistentArrayMap
+  (e [ent] (:db/id ent))
+
+  datascript.impl.entity.Entity
+  (e [ent] (:db/id ent)))
+
+
+(defn qe [query db & args]
+  (when-let [result (-> (apply d/q query db args) ssolo)]
+    (d/entity db result)))
+
+
+
+(deftrack tqe [query db & args]
+  (when-let [result (-> (apply d/q query db args) ssolo)]
+    (d/entity db result)))
+
+
+
+(defn all-nodes [conn]
+  (posh/q conn '[:find [?e ...]
+                 :where [?e :node/type]]))
+
+
+(deftrack sorted-nodes [conn]
+  (sort @(all-nodes conn)))
+
+(deftrack node-feed [conn]
+  (reverse (sort @(all-nodes conn))))
+
+
+(defn node-parents [conn id]
+  (posh/pull conn [:set/_members :logic/_if :logic/_then] id))
+
+
+(defn node-children [conn id]
+  (posh/pull conn [:set/members :logic/if :logic/then] id))
+
+
+
