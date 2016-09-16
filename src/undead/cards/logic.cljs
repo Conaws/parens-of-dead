@@ -1,7 +1,7 @@
 (ns undead.cards.logic
   (:require [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]]
-            [undead.subs :as subs :refer [qe]]
+            [undead.subs :as subs :refer [qe e]]
             [re-com.core :as rc :refer [h-box md-circle-icon-button v-box]]
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
             [reagent.core :as r])
@@ -729,17 +729,37 @@
 
 
 (defn simple-node [conn id]
-  [:div
-   [:h1.row 
-    (pr-str (d/entity @conn
-                      id))]
-   [:div.row (pr-str @(subs/node-parents conn id))]
-   [:div.row (pr-str @(subs/node-children conn id))]
-   ])
+  (let [n (posh/pull conn '[*] id)
+        open (r/atom false)]
+    [:li.list-group-item
+     [:span id]
+
+     (if-let [c (:node/title @n )]
+        c ) 
+     (when @open [:div (pr-str @(subs/node-parents conn id))])
+     (when-let [c @(subs/node-children conn id)]
+                  (if-let [i (:logic/if c)]
+                    [:ul.indent
+                    [:div.indent
+                     [:b "IF "]
+                     [simple-node conn (e i)]]
+                     (let [b (:logic/then c)]
+                      [:div.indent
+                       [:b "then"]
+                       [simple-node conn (e b)]
+                       ])]
+                    (when-let [lif (:set/members c)]
+                      [:ul
+                       [:b (pr-str (:node/type @n))]
+                       (for [[i c] (map-indexed vector lif)]
+                         ^{:key (str id i c)} [simple-node conn (e c)]
+                         )]))
+                 )
+     ]))
 
 
 (defcard-rg simpletest
-  [simple-node lconn2 1])
+  [simple-node lconn2 10])
 
 
 (defn simple-nodes [conn]

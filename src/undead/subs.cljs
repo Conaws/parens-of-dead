@@ -120,12 +120,17 @@
   (reverse (sort @(all-nodes conn))))
 
 
+(defn node-type [conn id]
+  (posh/pull conn [:node/type] id))
+
+
 (defn node-parents [conn id]
   (posh/pull conn [:set/_members :logic/_if :logic/_then] id))
 
 
 (defn node-children [conn id]
   (posh/pull conn [:set/members :logic/if :logic/then] id))
+
 
 
 
