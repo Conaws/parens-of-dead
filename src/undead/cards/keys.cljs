@@ -86,6 +86,8 @@
   (into {} (for [[key attr] KEYATTRS]
              [key (aget e attr)])))
 
+
+
 (defonce BINDINGS (atom {"a" {"a" #(js/alert "a")
                               "b" #(js/alert "a")
                               "c" #(js/alert "a")

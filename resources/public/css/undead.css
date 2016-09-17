@@ -42,6 +42,10 @@
 
 }
 
+.indent {
+    margin-left: 25px;
+}
+
 
 .column2 {
     width: 500px;

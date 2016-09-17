@@ -1,5 +1,7 @@
 (ns undead.cards.drag
-  (:require [reagent.core :as r])
+  (:require [reagent.core :as r]
+            [posh.core :as posh :refer [posh! pull q]] 
+            [datascript.core :as d])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 
 
@@ -9,7 +11,9 @@
   [:div.ui-widget-content {:style {:width "150px" 
                                    :height "150px" 
                                    :padding "0.5em"}}
-   [:p "Drag me around"]])
+   [:p
+    {:on-drag-end #(js/alert %)}
+    "Drag me around"]])
 
 
 #_(defn home-did-mount []
@@ -143,3 +147,68 @@
   [:div
    [:button.tall {:on-drag-enter #(js/alert "wooohhhh")}]
    [:button {:draggable true} "woah"]])
+
+(def schema {:set/members {:db/valueType :db.type/ref
+                             :db/cardinality :db.cardinality/many}
+             :certainty/target  {:db/valueType :db.type/ref
+                                 :db/cardinality :db.cardinality/one}
+             :logic/not  {:db/valueType :db.type/ref
+                          :db/cardinality :db.cardinality/one}
+             :logic/then  {:db/valueType :db.type/ref
+                          :db/cardinality :db.cardinality/one}
+             :logic/if  {:db/valueType :db.type/ref
+                          :db/cardinality :db.cardinality/one}})
+
+
+(def lconn (d/create-conn schema))
+(posh! lconn)
+
+
+(def sample-nodes2
+  [{:db/id      1
+    :node/title "All Men are Mortal"}
+   {:db/id      2
+    :node/title "Socrates is a Man"}
+   {:db/id      3
+    :node/title "Socrates is Mortal"}
+   {:db/id      4
+    :logic/type :not
+    :node/title "Not All Men are Mortal"
+    :logic/not 1}
+   {:db/id       5
+    :logic/type  :and
+    :logic/title  "A and B"
+    :set/members #{1 2}}
+   {:db/id      6
+    :logic/type :if-then
+    :logic/title "If (A and B) then C"
+    :logic/if   5
+    :logic/then 3}
+   {:db/id 7
+    :logic/type :or
+    :logic/title "(B or C)"
+    :set/members #{2 3}}
+   {:db/id 8
+    :node/title "D"}
+   {:db/id 9
+    :logic/type :or
+    :logic/title "(B or C) or A"
+    :set/members #{1 7}}
+   {:db/id 10
+    :logic/type :if-then
+    :logic/title "If ((B or C) or A) then D"
+    :logic/if 9
+    :logic/then 8}
+   {:db/id 11
+    :certainty/score 90
+    :certainty/target 1}
+   {:db/id 12
+    :certainty/score 50
+    :certainty/target 2}
+   {:db/id 13
+    :certainty/score 40
+    :certainty/target 3}
+   ])
+
+
+

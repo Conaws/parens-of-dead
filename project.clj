@@ -16,7 +16,8 @@
                  [posh "0.3.5"]
                  [datascript "0.15.2"]
                  [re-frame "0.8.0"]
-                 [re-com "0.8.3"]]
+                 [re-com "0.8.3"]
+                 [cljsjs/d3 "4.2.2-0"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"

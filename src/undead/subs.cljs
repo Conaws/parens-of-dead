@@ -21,7 +21,7 @@
 
 
 
-(def sample-nodes2
+(def sample-nodes
   [{:db/id      1
     :node/type :atom
     :node/title "All Men are Mortal"}
@@ -111,6 +111,10 @@
 (defn all-nodes [conn]
   (posh/q conn '[:find [?e ...]
                  :where [?e :node/type]]))
+
+
+(defn pull-id [conn id]
+  (posh/pull conn '[*] id))
 
 
 (deftrack sorted-nodes [conn]

@@ -2,7 +2,8 @@
   (:require [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]]
             [undead.subs :as subs :refer [qe e]]
-            [re-com.core :as rc :refer [h-box md-circle-icon-button v-box]]
+            [re-com.core :as rc :refer [h-box md-circle-icon-button v-box popover-tooltip]]
+            
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
             [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]]))
@@ -758,8 +759,96 @@
      ]))
 
 
-(defcard-rg simpletest
-  [simple-node lconn2 10])
+
+
+
+
+
+(defn popdiv
+  "Returns the markup for a basic button"
+  [tooltip label]
+  (let [showing? (r/atom false)]
+    (fn
+      [tooltip label]
+      (when-not tooltip (reset! showing? false)) ;; To prevent tooltip from still showing after button drag/drop
+      (let [
+            the-button [:div
+                        (merge
+                          {:class    (str "rc-button btn " )
+                           }
+                          (when tooltip
+                            {:on-mouse-over #(do (reset! showing? true))
+                             :on-mouse-out  #(do (reset! showing? false))})
+                          )
+                        label]]
+        
+        [rc/box
+         :class "display-inline-flex"
+         :align :start
+         :child (if tooltip
+                  [popover-tooltip
+                   :label    tooltip
+                   :position :below-center
+                   :showing? showing?
+                   :anchor   the-button]
+                  the-button)]))))
+
+
+
+
+
+
+(defcard-rg poptest
+[popdiv "boom" [:div "boooo"]]
+
+
+  )
+
+
+
+
+
+
+
+(defn simple-node2 [conn id]
+  (let [n (posh/pull conn '[*] id)
+        children (subs/node-children conn id)
+        parents (subs/node-parents conn id)
+        open (r/atom false)]
+    [:li.list-group-item
+     [:span.badge.pull-left id]
+     (if-let [c (:node/title @n )]
+       c
+       ". ") 
+     [rc/hyperlink
+      :label (str (count @children))
+      :class "badge pull-right"
+      ]
+     
+     [:span.badge (count @children)]
+     (when @open [:div (pr-str @parents)
+                  (when-let [c @children]
+                    (if-let [i (:logic/if c)]
+                      [:ul.indent
+                       [:div.indent
+                        [:b "IF "]
+                        [simple-node conn (e i)]]
+                       (let [b (:logic/then c)]
+                         [:div.indent
+                          [:b "then"]
+                          [simple-node conn (e b)]
+                          ])]
+                      (when-let [lif (:set/members c)]
+                        [:ul
+                         [:b (pr-str (:node/type @n))]
+                         (for [[i c] (map-indexed vector lif)]
+                           ^{:key (str id i c)} [simple-node conn (e c)]
+                           )]))
+                    )])
+     ]))
+
+(defcard-rg simpletest2
+  [simple-node2 lconn2 10])
 
 
 (defn simple-nodes [conn]
@@ -771,13 +860,16 @@
 (defn simpler-nodes [conn]
   (let [nodes (subs/all-nodes conn)]
     (fn []
-      [:div
+      [:ul.bs-docs-sidenav
        (for [i @nodes]
          ^{:key (str i "b")}
          [logic-node conn i])])))
 
+(defcard-rg simplestest2
+ [simple-nodes lconn2])
+
 (defcard-rg simplestest
-  [:div
+  [:div.nav.bs-docs-sidenav
    [node-input lconn2]
    [simple-nodes lconn2]])
 
