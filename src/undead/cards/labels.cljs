@@ -2,7 +2,10 @@
   (:require [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]]
             [undead.subs :as subs :refer [qe e schema sample-nodes]]
-            [re-com.core :as rc :refer [h-box md-circle-icon-button v-box popover-tooltip]]
+            [re-com.core :as rc :refer [h-box md-circle-icon-button
+                                        v-box popover-tooltip
+                                        box button]]
+            [cljs-time.core :refer [now]]
             [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]])
   )
@@ -132,3 +135,45 @@
 
 (defcard-rg c
   [nodes-n conn])
+
+
+
+(defcard-rg labeldraw
+  [v-box
+   :gap "10px"
+   :children
+   [[button :label "hey"]
+    [rc/title :label "title"
+     :level :level1
+     :underline? true]
+    [button :label "ho"]
+    [rc/scroller
+     :v-scroll :auto
+     :height "300px"
+     :width "55px"
+     :child [:div (repeat 1000 "lorem ipsum dolar")]]]
+   ]
+  )
+
+
+(def datatom (r/atom (now)))
+
+(defcard-rg tabledrawa
+  [v-box
+   :gap "10px"
+   :children
+   [[rc/datepicker-dropdown :model datatom
+     :on-change #(reset! datatom %)]
+    [rc/datepicker :model datatom
+     :on-change #(reset! datatom %)]
+    [rc/title :label "title"
+     :level :level1
+     :underline? true]
+    [button :label "ho"]
+    [rc/scroller
+     :v-scroll :auto
+     :height "300px"
+     :width "55px"
+     :child [:div (repeat 1000 "lorem ipsum dolar")]]]
+   ]
+  )
