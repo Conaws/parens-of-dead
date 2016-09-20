@@ -1,14 +1,13 @@
 (ns undead.subs
-  (:require
-   [datascript.core :as d]
-   [reagent.core :as r]
-   [undead.util :refer [ssolo]]
-   [posh.core :as posh])
-   (:require-macros [undead.subs :refer [deftrack]]))
+  (:require [datascript.core :as d]
+            [posh.core :as posh]
+            [reagent.core :as r]
+            [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
+            [undead.util :refer [ssolo]])
+  (:require-macros [undead.subs :refer [deftrack]]))
 
-
-
-(def schema {:set/members {:db/valueType :db.type/ref
+(def schema {:node/title {:db/unique :db.unique/identity}
+             :set/members {:db/valueType :db.type/ref
                            :db/cardinality :db.cardinality/many}
              :certainty/target  {:db/valueType :db.type/ref
                                  :db/cardinality :db.cardinality/one}
@@ -152,3 +151,25 @@
           (schema-pull depth)))
 
 
+;;;; re-frame subs
+;;;; selections is a 
+
+(reg-sub
+ :get-in
+ (fn [db [_ p]]
+   (get-in db p)))
+
+(reg-sub
+ :selections
+ (fn [db]
+   (:selections db [])))
+
+
+(reg-event-db
+ :update-in
+ (fn [db [_ p f]]
+   (update-in db p f)))
+
+
+(defn conj-in-path [p v]
+  (dispatch [:update-in p (fn [e] (conj e v))]))

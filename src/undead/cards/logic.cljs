@@ -11,7 +11,9 @@
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
             [reagent.core :as r]
             [undead.cards.labels :as label]
-            [undead.subs :as subs :refer [e qe]]
+            [undead.subs :as subs :refer [schema
+                                          sample-nodes
+                                          e qe]]
             [undead.util :refer [p]])
   (:require-macros
    [com.rpl.specter.macros :refer [select-one]]
@@ -19,70 +21,8 @@
 
 (enable-console-print!)
 
-(def schema {:node/title {:db/unique :db.unique/identity}
-             :set/members {:db/valueType :db.type/ref
-                             :db/cardinality :db.cardinality/many}
-             :certainty/target  {:db/valueType :db.type/ref
-                                 :db/cardinality :db.cardinality/one}
-             :logic/not  {:db/valueType :db.type/ref
-                          :db/cardinality :db.cardinality/one}
-             :logic/then  {:db/valueType :db.type/ref
-                          :db/cardinality :db.cardinality/one}
-             :logic/if  {:db/valueType :db.type/ref
-                          :db/cardinality :db.cardinality/one}})
-
-
 (def lconn (d/create-conn schema))
 (posh! lconn)
-
-
-(def sample-nodes
-  [{:db/id      1
-    :node/title "All Men are Mortal"}
-   {:db/id      2
-    :node/title "Socrates is a Man"}
-   {:db/id      3
-    :node/title "Socrates is Mortal"}
-   {:db/id      4
-    :logic/type :not
-    :node/title "Not All Men are Mortal"
-    :logic/not 1}
-   {:db/id       5
-    :logic/type  :and
-    :logic/title  "A and B"
-    :set/members #{1 2}}
-   {:db/id      6
-    :logic/type :if-then
-    :logic/title "If (A and B) then C"
-    :logic/if   5
-    :logic/then 3}
-   {:db/id 7
-    :logic/type :or
-    :logic/title "(B or C)"
-    :set/members #{2 3}}
-   {:db/id 8
-    :node/title "D"}
-   {:db/id 9
-    :logic/type :or
-    :logic/title "(B or C) or A"
-    :set/members #{1 7}}
-   {:db/id 10
-    :logic/type :if-then
-    :logic/title "If ((B or C) or A) then D"
-    :logic/if 9
-    :logic/then 8}
-   {:db/id 11
-    :certainty/score 90
-    :certainty/target 1}
-   {:db/id 12
-    :certainty/score 50
-    :certainty/target 2}
-   {:db/id 13
-    :certainty/score 40
-    :certainty/target 3}
-   ])
-
-
 (d/transact! lconn sample-nodes)
 
 (declare logic-node)
@@ -244,7 +184,7 @@
           )))
 
 
-#_(defcard-rg nodestest
+(defcard-rg nodestest
   [nodes-render lconn])
 
 (def sample-nodes2 subs/sample-nodes)
@@ -558,33 +498,23 @@
   [multi-drop lconn2])
 
 
-(reg-event-db
- :update-in
- (fn [db [_ p f]]
-   (update-in db p f)))
-
-(reg-sub
- :get-in
- (fn [db [_ p]]
-   (get-in db p)))
 
 
-(dispatch [:assoc [:selections] []])
+
 (print (random-uuid))
 
-(defn conj-in-path [p v]
-  (dispatch [:update-in p (fn [e] (conj e v))]))
 
 
 
-(defn remove-buttons [selection-atom]
+
+(defn remove-buttons [conn selection-atom]
   (let [selections selection-atom]
     (fn []
-      [h-box
+      [v-box
        :children (vec (map (fn [e]
-                             [:button.btn.btn-default
-                              e
-                              [:span.label.label-warning
+                             [:div.well
+                              (label/deep-label conn e)
+                              [:button.btn.btn-default.pull-right
                                {:on-click #(dispatch [:assoc [:selections]
                                                       (vec (remove #{e} @selections))]
                                                      )}"X"]]) @selections))])))
@@ -592,7 +522,7 @@
 
 (defn multi-drop-rf [conn]
   (let [nodes (subs/nodes-deep conn 1)
-        selections (subscribe [:get-in [:selections]])
+        selections (subscribe [:selections])
         selection-id (r/atom nil)]
     (fn []
       (let [nodes  (keep (fn [m]
@@ -601,8 +531,7 @@
                              m)) @nodes)
             sort-2 (sort-by :node/type nodes)]
         [v-box
-         :children [[remove-buttons selections]
-                    [:div (pr-str selections)]
+         :children [[remove-buttons conn selections]
                     [rc/single-dropdown
                      :choices sort-2
                      :placeholder "If this then that"
@@ -613,7 +542,7 @@
                      :width "200px"
                      :model selection-id
                      :on-change #(do
-                                   (conj-in-path [:selections] %))]]]))))
+                                   (subs/conj-in-path [:selections] %))]]]))))
 
 
 (defcard-rg with-subs
@@ -816,7 +745,7 @@
 
 
 
-(defn mdrop [conn choices model on-change]
+#_(defn mdrop [conn choices model on-change]
   [rc/single-dropdown
    :choices choices
    :label-fn (comp (p label/deep-label conn) :db/id)
