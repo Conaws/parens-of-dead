@@ -112,7 +112,6 @@
   (posh/q conn '[:find [?e ...]
                  :where [?e :node/type]]))
 
-
 (defn pull-id [conn id]
   (posh/pull conn '[*] id))
 
@@ -136,5 +135,20 @@
   (posh/pull conn [:set/members :logic/if :logic/then] id))
 
 
+(defn schema-pull [depth]
+  [:node/title
+   :node/type
+   :logic/not
+   :logic/if
+   :logic/then
+   :db/id
+   {:set/members depth}])
+
+(defn nodes-deep [conn depth]
+  (posh/q conn '[:find [(pull ?e
+                              ?pull) ...]
+                 :in $ ?pull
+                 :where [?e]]
+          (schema-pull depth)))
 
 

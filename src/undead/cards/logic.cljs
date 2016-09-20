@@ -10,8 +10,9 @@
              [h-box md-circle-icon-button popover-tooltip v-box]]
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
             [reagent.core :as r]
-            [undead.util :refer [p]]
-            [undead.subs :as subs :refer [e qe]])
+            [undead.cards.labels :as label]
+            [undead.subs :as subs :refer [e qe]]
+            [undead.util :refer [p]])
   (:require-macros
    [com.rpl.specter.macros :refer [select-one]]
    [devcards.core :refer [defcard-rg]]))
@@ -246,126 +247,7 @@
 #_(defcard-rg nodestest
   [nodes-render lconn])
 
-
-
-(defn barometer1
-  ([score] (barometer1 score 30))
-  ([score size]
-   [:div  {:style {:width  (str size "px")
-                   :height (str size "px")
-                   :border "2px solid black"
-
-                   :border-radius  (str size "px")}}
-    [:div  {:style
-            {:background-color "black"
-             :width  (str size "px")
-             :height (str size "px")
-             :border-radius  (str size "px")
-             :opacity (str (/ score 100))}}
-     ]]))
-
-
-(defn barometer2
-  ([score] (barometer2 score 30))
-  ([score size]
-   [:div  {:style {:width  (str size "px")
-                   :height (str size "px")
-                   :border "2px solid black"
-                   :overflow "hidden"
-                   :border-radius  (str size "px")}}
-    [:div  {:style
-            {:background-color "black"
-             :width  (str score "%")
-             :height (str size "px")
-             }}
-     ]]))
-
-
-(defn barometer3
-  ([score] (barometer3 score 10 50))
-  ([score width]  (barometer3 score 10 width))
-  ([score height width]
-   [:div  {:style {:width  (str width "px")
-                   :height (str height "px")
-                   :border "2px solid black"
-                   :background-color "blue"
-                   :overflow "hidden"
-                   }}
-    [:div  {:style
-            {:background-color "white"
-             :width  (str score "%")
-             :height "100%"
-             }}
-     ]]))
-
-
-
-(defcard-rg barometers
-  [:div
-   [barometer1 5]
-   [barometer1 25 50]
-   [barometer2 50 50]
-   [barometer2 75 50]
-   [barometer3 75 10 300]
-   [barometer3 75 10 300]
-   [barometer3 90 10 300]
-   ])
-
-
-(def sample-nodes2
-  [{:db/id      1
-    :node/type :atom
-    :node/title "All Men are Mortal"}
-   {:db/id      2
-    :node/type :atom
-    :node/title "Socrates is a Man"}
-   {:db/id      3
-    :node/type :atom
-    :node/title "Socrates is Mortal"}
-   {:db/id      4
-    :node/type :not
-    :node/title "Not All Men are Mortal"
-    :logic/not 1}
-   {:db/id       5
-    :node/type  :and
-    :logic/title  "A and B"
-    :set/members #{1 2}}
-   {:db/id      6
-    :node/type :if
-    :logic/title "If (A and B) then C"
-    :logic/if   5
-    :logic/then 3
-    :set/members #{5 3}
-    }
-   {:db/id 7
-    :node/type :or
-    :logic/title "(B or C)"
-    :set/members #{2 3}}
-   {:db/id 8
-    :node/type :atom
-    :node/title "D"}
-   {:db/id 9
-    :node/type :or
-    :logic/title "(B or C) or A"
-    :set/members #{1 7}}
-   {:db/id 10
-    :node/type :if
-    :logic/title "If ((B or C) or A) then D"
-    :logic/if 9
-    :logic/then 8}
-   {:db/id 11
-    :node/type :certainty
-    :certainty/score 90
-    :certainty/target 1}
-   {:db/id 12
-    :node/type :certainty
-    :certainty/score 50
-    :certainty/target 2}
-   {:db/id 13
-    :node/type :certainty
-    :certainty/score 40
-    :certainty/target 3}
-   ])
+(def sample-nodes2 subs/sample-nodes)
 
 
 (defonce lconn2 (d/create-conn schema))
@@ -694,15 +576,22 @@
   (dispatch [:update-in p (fn [e] (conj e v))]))
 
 
+
+(defn remove-buttons [selection-atom]
+  (let [selections selection-atom]
+    (fn []
+      [h-box
+       :children (vec (map (fn [e]
+                             [:button.btn.btn-default
+                              e
+                              [:span.label.label-warning
+                               {:on-click #(dispatch [:assoc [:selections]
+                                                      (vec (remove #{e} @selections))]
+                                                     )}"X"]]) @selections))])))
+
+
 (defn multi-drop-rf [conn]
-  (let [nodes (posh/q conn '[:find [(pull ?e [:node/title
-                                              :node/type
-                                              :logic/not
-                                              :logic/if
-                                              :logic/then
-                                              :db/id
-                                              {:set/members 3}] ) ...]
-                               :where [?e]])
+  (let [nodes (subs/nodes-deep conn 1)
         selections (subscribe [:get-in [:selections]])
         selection-id (r/atom nil)]
     (fn []
@@ -712,14 +601,7 @@
                              m)) @nodes)
             sort-2 (sort-by :node/type nodes)]
         [v-box
-         :children [[h-box
-                     :children (vec (map (fn [e]
-                                          [:div.well
-                                           e
-                                           [:span.label.label-warning
-                                            {:on-click #(dispatch [:assoc [:selections]
-                                                                   (vec (remove #{e} @selections))]
-                                                                )}"X"]]) @selections))]
+         :children [[remove-buttons selections]
                     [:div (pr-str selections)]
                     [rc/single-dropdown
                      :choices sort-2
@@ -734,7 +616,7 @@
                                    (conj-in-path [:selections] %))]]]))))
 
 
-(defcard-rg addtest
+(defcard-rg with-subs
   [multi-drop-rf lconn2])
 
 
@@ -934,5 +816,21 @@
 
 
 
+(defn mdrop [conn choices model on-change]
+  [rc/single-dropdown
+   :choices choices
+   :label-fn (comp (p label/deep-label conn) :db/id)
+   :id-fn :db/id
+   :group-fn (comp str :node/type)])
+
+
+#_(defn simple-drop
+  (let [nodes ])
+  )
+
+
+(defcard-rg equality-map
+  [:div (label/deep-label lconn2 12)]
+  )
 
 

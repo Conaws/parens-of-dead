@@ -1,14 +1,11 @@
 (ns undead.cards.labels
-  (:require [datascript.core :as d]
-            [posh.core :as posh :refer [posh! pull q]]
-            [undead.subs :as subs :refer [qe e schema sample-nodes]]
-            [re-com.core :as rc :refer [h-box md-circle-icon-button
-                                        v-box popover-tooltip
-                                        box button]]
-            [cljs-time.core :refer [now]]
-            [reagent.core :as r])
-  (:require-macros [devcards.core :refer [defcard-rg]])
-  )
+  (:require [cljs-time.core :refer [now]]
+            [datascript.core :as d]
+            [posh.core :as posh :refer [posh!]]
+            [re-com.core :as rc :refer [button v-box]]
+            [reagent.core :as r]
+            [undead.subs :as subs :refer [e sample-nodes schema]])
+  (:require-macros [devcards.core :refer [defcard-rg]]))
 
 (defonce conn (d/create-conn schema))
 (posh! conn)
@@ -177,3 +174,76 @@
      :child [:div (repeat 1000 "lorem ipsum dolar")]]]
    ]
   )
+
+
+
+
+
+
+
+
+
+
+
+(defn barometer1
+  ([score] (barometer1 score 30))
+  ([score size]
+   [:div  {:style {:width  (str size "px")
+                   :height (str size "px")
+                   :border "2px solid black"
+
+                   :border-radius  (str size "px")}}
+    [:div  {:style
+            {:background-color "black"
+             :width  (str size "px")
+             :height (str size "px")
+             :border-radius  (str size "px")
+             :opacity (str (/ score 100))}}
+     ]]))
+
+
+(defn barometer2
+  ([score] (barometer2 score 30))
+  ([score size]
+   [:div  {:style {:width  (str size "px")
+                   :height (str size "px")
+                   :border "2px solid black"
+                   :overflow "hidden"
+                   :border-radius  (str size "px")}}
+    [:div  {:style
+            {:background-color "black"
+             :width  (str score "%")
+             :height (str size "px")
+             }}
+     ]]))
+
+
+(defn barometer3
+  ([score] (barometer3 score 10 50))
+  ([score width]  (barometer3 score 10 width))
+  ([score height width]
+   [:div  {:style {:width  (str width "px")
+                   :height (str height "px")
+                   :border "2px solid black"
+                   :background-color "blue"
+                   :overflow "hidden"
+                   }}
+    [:div  {:style
+            {:background-color "white"
+             :width  (str score "%")
+             :height "100%"
+             }}
+     ]]))
+
+
+
+(defcard-rg barometers
+  [:div
+   [barometer1 5]
+   [barometer1 25 50]
+   [barometer2 50 50]
+   [barometer2 75 50]
+   [barometer3 75 10 300]
+   [barometer3 75 10 300]
+   [barometer3 90 10 300]
+   ])
