@@ -1,11 +1,17 @@
 (ns undead.cards.logic
-  (:require [datascript.core :as d]
+  (:require [clojure.string :as str]
+            [com.rpl.specter :as sp]
+            [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]]
-            [undead.subs :as subs :refer [qe e]]
-            [re-com.core :as rc :refer [h-box md-circle-icon-button v-box popover-tooltip]]
+            [re-com.core
+             :as
+             rc
+             :refer
+             [h-box md-circle-icon-button popover-tooltip v-box]]
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
             [reagent.core :as r]
-            [com.rpl.specter :as sp])
+            [undead.util :refer [p]]
+            [undead.subs :as subs :refer [e qe]])
   (:require-macros
    [com.rpl.specter.macros :refer [select-one]]
    [devcards.core :refer [defcard-rg]]))
@@ -814,41 +820,42 @@
 
 
 (defn simple-node2 [conn id]
-  (let [n (posh/pull conn '[*] id)
-        children (subs/node-children conn id)
-        parents (subs/node-parents conn id)
-        open (r/atom false)]
-    [:li.list-group-item
-     [:span.badge.pull-left id]
-     (if-let [c (:node/title @n )]
-       c
-       ". ") 
-     [rc/hyperlink
-      :label (str (count @children))
-      :class "badge pull-right"
-      ]
-     
-     [:span.badge (count @children)]
-     (when @open [:div (pr-str @parents)
-                  (when-let [c @children]
-                    (if-let [i (:logic/if c)]
-                      [:ul.indent
-                       [:div.indent
-                        [:b "IF "]
-                        [simple-node conn (e i)]]
-                       (let [b (:logic/then c)]
+  (fn [conn id]
+    (let [n (posh/pull conn '[*] id)
+          children (subs/node-children conn id)
+          parents (subs/node-parents conn id)
+          open (r/atom false)]
+      [:li.list-group-item
+       [:span.badge.pull-left id]
+       (if-let [c (:node/title @n )]
+         c
+         ". ") 
+       [rc/hyperlink
+        :label (str (count @children))
+        :class "badge pull-right"
+        ]
+       
+       [:span.badge (count @children)]
+       (when @open [:div (pr-str @parents)
+                    (when-let [c @children]
+                      (if-let [i (:logic/if c)]
+                        [:ul.indent
                          [:div.indent
-                          [:b "then"]
-                          [simple-node conn (e b)]
-                          ])]
-                      (when-let [lif (:set/members c)]
-                        [:ul
-                         [:b (pr-str (:node/type @n))]
-                         (for [[i c] (map-indexed vector lif)]
-                           ^{:key (str id i c)} [simple-node conn (e c)]
-                           )]))
-                    )])
-     ]))
+                          [:b "IF "]
+                          [simple-node conn (e i)]]
+                         (let [b (:logic/then c)]
+                           [:div.indent
+                            [:b "then"]
+                            [simple-node conn (e b)]
+                            ])]
+                        (when-let [lif (:set/members c)]
+                          [:ul
+                           [:b (pr-str (:node/type @n))]
+                           (for [[i c] (map-indexed vector lif)]
+                             ^{:key (str id i c)} [simple-node conn (e c)]
+                             )]))
+                      )])
+       ])))
 
 (defcard-rg simpletest2
   [simple-node2 lconn2 10])
@@ -862,7 +869,7 @@
 
 (defn simpler-nodes [conn]
   (let [nodes (subs/all-nodes conn)]
-    (fn []
+    (fn [conn]
       [:ul.bs-docs-sidenav
        (for [i @nodes]
          ^{:key (str i "b")}
@@ -886,13 +893,46 @@
         :where  [?e ?attr ?val]]
       db attr val))
 
-(defn find-or-create-by [db attr val]
-  (or (:db/id (find-by @db attr val))
-      (select-one [:tempids sp/FIRST sp/LAST] (d/transact! db [{:db/id -1
-                                attr val}])))
 
-  )
+(defn tx->id [tx]
+  (select-one [:tempids sp/FIRST sp/LAST] tx))
 
-(println (find-or-create-by lconn2 :node/title "All Men are orrtal"))
+
+
+(defn find-or-create-atom [db title]
+  (or (:db/id (find-by @db :node/title title))
+      (tx->id  (d/transact! db [{:db/id -1
+                                 :node/title title
+                                 :node/type :atom}]))))
+
+
+
+(defn find-or-create-parent-child [db parent child]
+  (or (d/q '[:find [?eid]
+             :in $ ?parent ?child
+             :where
+             [?eid :set/parent ?parent]
+             [?eid :set/child ?child]]
+           @db
+           parent
+           child)
+      (d/transact! db [{:db/id -1
+                        :logic/type :subset
+                        :set/parent parent
+                        :set/child child}])))
+
+(def relstring "Booky > Physics Booky > QED Books")
+
+(defn sets-from-string [conn s]
+ (let [units (str/split s " > ")
+       eids (map (p find-or-create-atom conn) units)]
+   (reduce (fn [parent child]
+             (when parent
+               (find-or-create-parent-child conn parent child))
+             child
+             ) nil  eids)))
+
+
+
 
 

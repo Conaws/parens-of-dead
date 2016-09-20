@@ -23,3 +23,5 @@
   "Same as (only (only coll))"
   [coll]
   (only (only coll)))
+
+(def p partial)
