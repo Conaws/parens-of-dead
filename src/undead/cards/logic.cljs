@@ -330,6 +330,11 @@
    {:id :logic/or    :label "OR"}
    ])
 
+
+
+(declare and-form or-form)
+
+
 (defn node-input [conn]
   (let [editatom (r/atom "")
         selected-type (r/atom (:id (first logic-types)))]
@@ -342,18 +347,30 @@
        :children [[rc/vertical-bar-tabs
                    :model selected-type
                    :tabs logic-types
-                   :on-change #(reset! selected-type %)]
+                   :on-change #(do
+                                 (dispatch [:clear-selections])
+                                 (reset! selected-type %))]
                   (condp = @selected-type
                     :logic/atom
                     [v-box
-                     :children [[rc/input-text
+                     :children [[rc/title :label "ATOM"
+                                 :level :level1
+                                ]
+                                [rc/input-text
                                  :model editatom
                                  :placeholder "Add an Atom"
                                  :on-change #(reset! editatom %)]
                                 [rc/button
                                  :label "Add"
                                  :on-click #(add-atom conn editatom )]]]
-                    [:div (pr-str @selected-type)]
+                    :logic/or
+                    [or-form conn]
+                    :logic/and
+                    [and-form conn]
+                    :logic/if
+                    [rc/title :label "IF"
+                     :level :level1]
+                    (pr-str @selected-type)
                     )]
        ]
       ))
@@ -380,7 +397,7 @@
                   :child
                   [:div (pr-str i)]]))]))
 
-(defcard-rg nodestest20
+(defcard-rg feedtest
   [:div
    [node-input lconn2]
    [feed lconn2]])
@@ -447,6 +464,7 @@
     (pr-str n))
   )
 
+(declare small-drop)
 
 (defn multi-drop [conn]
   (let [nodes (posh/q conn '[:find [(pull ?e [:node/title
@@ -507,23 +525,24 @@
 
 
 
-(defn remove-buttons [conn selection-atom]
+(defn remove-buttons [conn selection-atom remove-fn]
   (let [selections selection-atom]
     (fn []
       [v-box
        :children (vec (map (fn [e]
-                             [:div.well
-                              (label/deep-label conn e)
+                             [:div
+                              (label/deep-label-n conn e)
                               [:button.btn.btn-default.pull-right
-                               {:on-click #(dispatch [:assoc [:selections]
-                                                      (vec (remove #{e} @selections))]
-                                                     )}"X"]]) @selections))])))
+                               {:on-click #(dispatch [:remove-from-selections e])} "X"]])
+
+                           @selections))])))
 
 
 (defn multi-drop-rf [conn]
   (let [nodes (subs/nodes-deep conn 1)
         selections (subscribe [:selections])
-        selection-id (r/atom nil)]
+        selection-id (r/atom nil)
+        ]
     (fn []
       (let [nodes  (keep (fn [m]
                            (if (not ((set @selections)
@@ -531,7 +550,7 @@
                              m)) @nodes)
             sort-2 (sort-by :node/type nodes)]
         [v-box
-         :children [[remove-buttons conn selections]
+         :children [
                     [rc/single-dropdown
                      :choices sort-2
                      :placeholder "If this then that"
@@ -547,6 +566,55 @@
 
 (defcard-rg with-subs
   [multi-drop-rf lconn2])
+
+
+
+
+
+
+(defn and-form [conn]
+  (let [selections (subscribe [:selections])]
+    (fn [conn]
+      [:div.flex {:style {:align-items "center"
+                          :flex-flow "column wrap"
+                          }}
+       [rc/title :level :level1
+                  :label "AND"]
+       [multi-drop-rf conn]
+       [remove-buttons conn selections]
+       [rc/button :label "Create"
+        :on-click #(do
+                     (d/transact! conn [{:db/id -1
+                                         :node/type :and
+                                         :set/members @selections}])
+                     (dispatch [:clear-selections]))]
+       ]
+      )))
+
+
+(defcard-rg and-formtest
+  [and-form lconn2])
+
+
+(defn or-form [conn]
+  (let [selections (subscribe [:selections])]
+    (fn [conn]
+      [:div.flex {:style {:align-items "center"
+                          :flex-flow "column wrap"
+                          }}
+       [rc/title :level :level1
+        :label "OR"]
+       [multi-drop-rf conn]
+       [remove-buttons conn selections]
+       [rc/button :label "Create"
+        :on-click #(do
+                     (d/transact! conn [{:db/id -1
+                                       :node/type :or
+                                         :set/members @selections}])
+                     (dispatch [:clear-selections])
+                                  )]
+       ]
+      )))
 
 
 (defn simple-node [conn id]

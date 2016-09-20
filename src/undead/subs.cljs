@@ -173,3 +173,31 @@
 
 (defn conj-in-path [p v]
   (dispatch [:update-in p (fn [e] (conj e v))]))
+
+
+
+(reg-event-db
+ :remove-from-selections
+ (fn [db [_ x]]
+   (assoc db :selections (vec (remove #{x} (:selections db))))))
+
+
+(reg-event-db
+ :clear-selections
+ (fn [db]
+   (assoc db :selections [])))
+
+
+
+;; this might be stupid
+;; was stupid
+#_(deftrack sorted-unselected-nodes
+  ([nodes selected] (sorted-unselected-nodes :node/type))
+  ([nodes selected sort-fn]
+   (sort-by sort-fn (keep
+                     (fn [m]
+                       (when (not ((set @selected)
+                                 (:db/id m)))
+                         m))
+                     @nodes))))
+
