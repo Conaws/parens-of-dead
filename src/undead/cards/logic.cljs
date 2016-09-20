@@ -3,14 +3,17 @@
             [posh.core :as posh :refer [posh! pull q]]
             [undead.subs :as subs :refer [qe e]]
             [re-com.core :as rc :refer [h-box md-circle-icon-button v-box popover-tooltip]]
-            
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
-            [reagent.core :as r])
-  (:require-macros [devcards.core :refer [defcard-rg]]))
+            [reagent.core :as r]
+            [com.rpl.specter :as sp])
+  (:require-macros
+   [com.rpl.specter.macros :refer [select-one]]
+   [devcards.core :refer [defcard-rg]]))
 
 (enable-console-print!)
 
-(def schema {:set/members {:db/valueType :db.type/ref
+(def schema {:node/title {:db/unique :db.unique/identity}
+             :set/members {:db/valueType :db.type/ref
                              :db/cardinality :db.cardinality/many}
              :certainty/target  {:db/valueType :db.type/ref
                                  :db/cardinality :db.cardinality/one}
@@ -872,5 +875,24 @@
   [:div.nav.bs-docs-sidenav
    [node-input lconn2]
    [simple-nodes lconn2]])
+
+
+
+(defn find-by
+  "Returns the unique entity identified by attr and val."
+  [db attr val]
+  (qe '[:find ?e
+        :in $ ?attr ?val
+        :where  [?e ?attr ?val]]
+      db attr val))
+
+(defn find-or-create-by [db attr val]
+  (or (:db/id (find-by @db attr val))
+      (select-one [:tempids sp/FIRST sp/LAST] (d/transact! db [{:db/id -1
+                                attr val}])))
+
+  )
+
+(println (find-or-create-by lconn2 :node/title "All Men are orrtal"))
 
 
