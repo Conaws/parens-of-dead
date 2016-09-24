@@ -4,7 +4,8 @@
             [posh.core :as posh :refer [posh!]]
             [re-com.core :as rc :refer [button v-box]]
             [reagent.core :as r]
-            [undead.subs :as subs :refer [e conn]])
+            [undead.subs :as subs :refer [e conn]]
+            [clojure.set :as set])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 
 (def datatom (r/atom (now)))
@@ -26,16 +27,41 @@
     :set/members [[:node/title "Peter Thiel"]
                   [:node/title "Elon Musk"]
                   ]}
+   {:db/id -5
+    :node/type :set
+    :node/title "Scheduled"
+    :set/members [[:node/title "Peter Thiel"]
+                  [:node/title "Elon Musk"]
+                  ]}
+   {:db/id -6
+    :node/type :set
+    :node/title "Investor Sets"
+    :set/members [-5 -4]
+    }
    ])
 
 
 (d/transact! newconn grid-transaction)
 
 (defn simple-table []
-  (let [i (posh/pull newconn '[:node/title {:set/members ...}] [:node/title "Investors"])]
+  (let [i (posh/pull newconn '[:node/title {:set/members ...}] [:node/title "Investors"])
+        sets (posh/pull newconn '[:node/title :node/type {:set/members ...}] [:node/title "Investor Sets"])]
     [:div
      [:table.bblack
-      [:thead [:tr [:th "Investors"][:th][:th "Donec at pede."][:th "Donec at pede."][:th "Donec at pede."]]]]
+      [:thead [:tr [:th "Investors"][:th]
+               (for [m (:set/members @sets)]
+                 [:th (:node/title m)])]]
+      [:tbody
+       (for [m (:set/members @i)]
+         [:tr [:th (:node/title m)][:th]
+          (for [m (:set/members @sets)]
+            [:th (:node/title m)])
+          ]
+         )
+
+       ]
+      
+      ]
      (pr-str @i)
      ]))
 
