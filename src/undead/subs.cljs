@@ -75,7 +75,9 @@
     :certainty/target 3}
    ])
 
-
+(defonce conn (d/create-conn schema))
+(posh! conn)
+(d/transact! conn sample-nodes)
 
 (defprotocol Eid
   "A protocol for retrieving an object's entity id."

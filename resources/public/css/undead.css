@@ -2,6 +2,12 @@
     border: 2px solid black;
 }
 
+
+th {
+    border: 2px solid black;
+    padding: 5px;
+}
+
 .cell2{
     height: 200px;
     background-color: red;
