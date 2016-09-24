@@ -116,7 +116,7 @@
                               :on-stop #(reset! newst false)
                               :on-save #(addset conn % ytitle) 
                               }]
-                    [rc/button :label "New Set"
+                    [rc/button :label (str "New " ytitle)
                      :on-click #(reset! newst true)]
                     )
 
@@ -144,40 +144,52 @@
                                                                  :set/_members [:node/title xtitle]}])
                                              )}
                                  ]
-                       [rc/button :label "a"
+                       [rc/button :label (str "New " xtitle )
                         :on-click #(reset! newelem true)])]
           [:td]]
          ]]
-       (pr-str @conn)
+       ;; (pr-str @conn)
        ])))
 
 
+(defn simple-sets [conn topgroup]
+  (let [root (posh/pull conn '[:node/type :node/title {:set/members ...}] [:node/title topgroup])]
+    (fn []
+      [:div.nest
+       [:ol
+        (for [m (:set/members @root)]
+          [:div
+           [:label (:node/title m)]
+           [:ol
+            (for [m (:set/members m)]
+              [:li
+               [:label (:node/title m)]
+               ])]])]
+       ]
+      )))
+
 (defn testa []
   (fn []
-    [v-box
-     :gap "10px"
-     :children
-     [[rc/datepicker-dropdown :model datatom
-       :on-change #(reset! datatom %)]
-      ;; [rc/datepicker :model datatom
-      ;;  :on-change #(reset! datatom %)]
-      ;; [rc/title :label "title"
-      ;;  :level :level1
-      ;;  :underline? true]
-      ;; [button :label (pr-str @newconn)]
-      [simple-table newconn "Investors" "Investor Sets"]
-      [rc/scroller
-       :v-scroll :auto
-       :height "300px"
-       :width "550px"
-       :child [:div (repeat 100 "Nullam eu ante vel est convallis dignissim.  Fusce suscipit, wisi nec facilisis facilisis, est dui fermentum leo, quis tempor ligula erat quis odio.  Nunc porta vulputate tellus.  Nunc rutrum turpis sed pede.  Sed bibendum.  Aliquam posuere.  Nunc aliquet, augue nec adipiscing interdum, lacus tellus malesuada massa, quis varius mi purus non odio.  Pellentesque condimentum, magna ut suscipit hendrerit, ipsum augue ornare nulla, non luctus diam neque sit amet urna.  Curabitur vulputate vestibulum lorem.  Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.  Sed id ligula quis est convallis tempor.  Curabitur lacinia pulvinar nibh.  Nam a sapien.
+    [rc/h-box
+     :children [
 
-Aenean in sem ac leo mollis blandit.  
 
-Nam euismod tellus id erat.  
+                [v-box
+                 :gap "10px"
+                 :children
+                 [[rc/datepicker-dropdown :model datatom
+                   :on-change #(reset! datatom %)]
+                  ;; [rc/datepicker :model datatom
+                  ;;  :on-change #(reset! datatom %)]
+                  ;; [rc/title :label "title"
+                  ;;  :level :level1
+                  ;;  :underline? true]
+                  ;; [button :label (pr-str @newconn)]
+                  [simple-table newconn "Investors" "Investor Sets"]
 
-")]]]
-     ]))
+                  [simple-sets newconn "Investor Sets"]
+                  ]
+                 ]]]))
 (defcard-rg tabledrawa
  [testa] 
   )

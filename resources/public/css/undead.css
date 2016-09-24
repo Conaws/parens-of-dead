@@ -61,6 +61,18 @@ table {
     color: #fff;
 }
 
+/* expanded nestables */
+
+.nest {
+    background-color: #2f4f4f;
+    color: #778899;
+    font-size: 15px;
+
+
+}
+
+
+
 
 .cell2{
     height: 200px;
