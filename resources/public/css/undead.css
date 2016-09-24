@@ -2,10 +2,65 @@
     border: 2px solid black;
 }
 
+.gridtest {
+    padding: 10px 10px 5px 5px;
 
-th {
-    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
+/* .nopad { */
+/*     padding: 0; */
+
+/* } */
+
+/* button.btnn { */
+/*     background: white; */
+/*     border: 1px solid #ddd; */
+/* } */
+
+/* button.btnn:hover { */
+/*     /\* background: #357ebd; *\/ */
+/*     background: #ddd; */
+/*     /\* color: white; *\/ */
+/*     border: 1px solid #ddd; */
+/* } */
+
+table {
+    
+}
+
+
+.gridtest table {
+    color: #363636;
+    text-align: center;
+    background: white;
+    font-size: 14px;
+    width: 100%;
+    margin: 0;
+    border-collapse: seperate;
+    /* max-width: 700px; */
+}
+
+.gridtest td, .gridtest th {
+    text-align: center;
+    padding: 4px;
+    border-radius: 4px;
+    font-weight: normal;
+    white-space: nowrap;
+    min-width: 45px;
+}
+
+.gridtest td:hover, .gridtest th:hover {
+    background: #eee;
+    cursor: pointer;
+}
+
+.gridtest td.active, .gridtest td.active:hover {
+    background-color: #357ebd;
+    border-color: #3071a9;
+    color: #fff;
+}
+
 
 .cell2{
     height: 200px;
