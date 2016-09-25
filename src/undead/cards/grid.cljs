@@ -3,11 +3,14 @@
             [datascript.core :as d]
             [posh.core :as posh :refer [posh!]]
             [re-com.core :as rc :refer [button v-box]]
+            [com.rpl.specter :as sp :refer [ALL filterer]] 
             [reagent.core :as r]
             [undead.subs :as subs :refer [e conn]]
             [clojure.set :as set]
             )
-  (:require-macros [devcards.core :refer [defcard-rg]]))
+  (:require-macros [com.rpl.specter.macros  :refer [select select-one
+                                                    setval transform]]
+                   [devcards.core :refer [defcard-rg]]))
 
 (def datatom (r/atom (now)))
 
@@ -43,6 +46,11 @@
     :node/type :set
     :node/title "Pitched"
     :set/members [
+                  ]}
+   {:db/id -8
+    :node/type :set
+    :node/title "Super Set"
+    :set/members [-6
                   ]}])
 
 
@@ -163,7 +171,8 @@
            [:ol
             (for [m (:set/members m)]
               [:li
-               [:label (:node/title m)]
+               [:label {:draggable true}
+                (:node/title m)]
                ])]])]
        ]
       )))
@@ -177,13 +186,15 @@
                 [v-box
                  :gap "10px"
                  :children
-                 [[rc/datepicker-dropdown :model datatom
-                   :on-change #(reset! datatom %)]
-                  ;; [rc/datepicker :model datatom
+                 [
+
+                  ;; [rc/datepicker-dropdown :model datatom
                   ;;  :on-change #(reset! datatom %)]
-                  ;; [rc/title :label "title"
-                  ;;  :level :level1
-                  ;;  :underline? true]
+                  [rc/datepicker :model datatom
+                   :on-change #(reset! datatom %)]
+                  [rc/title :label "Investor Groupings"
+                   :level :level1
+                   :underline? true]
                   ;; [button :label (pr-str @newconn)]
                   [simple-table newconn "Investors" "Investor Sets"]
 
@@ -195,12 +206,149 @@
   )
 
 
+(defn intersection-node [conn x y]
+  (let [inter (posh/q conn '[:find [?title ...]
+                             :in $ ?x ?y
+                             :where [?x :set/members ?e]
+                             [?y :set/members ?e]
+                             [?e :node/title ?title]]
+                      (e x)
+                      (e y))]
+    (fn []
+      [:td (pr-str @inter)]     ;; (if (= x y)
+        ;; [:td.active "\\"]
+        ;; )
+      )))
+
+(defn intersection-table [conn xtitle ytitle]
+  (let [xsets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title xtitle])
+        ysets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title ytitle])
+        newelem (r/atom false)
+        newst (r/atom false)]
+    (fn []
+      [:div
+       
+       [:div.gridtest
+        [rc/title :label "Intersection"
+         :level :level1
+         :underline? true
+         ]
+        [:table
+         [:thead
+          [:tr [:th][:th] [:th.underline {:col-span "5"} ytitle] ]
+          [:tr [:th.underline xtitle][:th]
+           (for [m (:set/members @ysets)]
+             [:th (:node/title m)])
+           [:th
+
+            (if @newst 
+              [x-input {:title ""
+                        :on-stop #(reset! newst false)
+                        :on-save #(addset conn % ytitle) 
+                        }]
+              [rc/button :class "btn" :label (str "New " ytitle)
+               :on-click #(reset! newst true)]
+              )
+
+            ]]]
+         [:tbody
+          (for [m (:set/members @xsets)]
+            [:tr [:th (:node/title m)][:th]
+             (for [s (:set/members @ysets)]
+               ;; (if (contains? (set (:set/members s)) m )
+               ;;   [:td.active
+               ;;    {:on-click
+               ;;     #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
+               ;;     }"Y"]
+               ;;   [:td
+               ;;    {:on-click
+               ;;     #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
+               ;;     }"N"]))])
+               [intersection-node conn m s]
+               )])
+          [:tr [:td (if @newelem [x-input
+                                  {:title ""
+                                   :on-stop #(reset! newelem false)
+                                   :on-save #(do
+                                               (d/transact! conn [{:db/id -1
+                                                                   :node/title %
+                                                                   :set/_members [:node/title xtitle]}])
+                                               )}
+                                  ]
+                        [rc/button :label (str "New " xtitle )
+                         :on-click #(reset! newelem true)])]
+           [:td]]
+          ]]
+        ;; (pr-str @conn)
+        ]])))
 
 
 
 
+(defcard-rg intertable 
+  [intersection-table newconn "Investor Sets" "Investor Sets"])
 
 
+(defn folding-table [conn xtitle ytitle]
+  (let [xsets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title xtitle])
+        ysets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title ytitle])
+        newelem (r/atom false)
+        newst (r/atom false)]
+    (fn []
+      [:div
+       
+       [:div.gridtest
+        [rc/title :label "Nested Sets"
+         :level :level1
+         :underline? true
+         ]
+        [:table
+         [:thead
+          [:tr [:th][:th] [:th.underline {:col-span "5"} ytitle] ]
+          [:tr [:th.underline xtitle][:th]
+           (for [m (:set/members @ysets)]
+             [:th (:node/title m)])
+           [:th
+
+            (if @newst 
+              [x-input {:title ""
+                        :on-stop #(reset! newst false)
+                        :on-save #(addset conn % ytitle) 
+                        }]
+              [rc/button :class "btn" :label (str "New " ytitle)
+               :on-click #(reset! newst true)]
+              )
+
+            ]]]
+         [:tbody
+          (for [m (:set/members @xsets)]
+            [:tr [:th (:node/title m)][:th]
+             (for [s (:set/members @ysets)]
+               (let [inner-sets (:set/members s)
+                     matching-inner (->> inner-sets
+                                         (select [ALL (sp/selected? [:set/members #(-> %
+                                                                                       set
+                                                                                       (contains? m))])
+                                                  :node/title]) )]
+
+                 [:td (pr-str matching-inner)])
+               )])
+          [:tr [:td (if @newelem [x-input
+                                  {:title ""
+                                   :on-stop #(reset! newelem false)
+                                   :on-save #(do
+                                               (d/transact! conn [{:db/id -1
+                                                                   :node/title %
+                                                                   :set/_members [:node/title xtitle]}])
+                                               )}
+                                  ]
+                        [rc/button :label (str "New " xtitle )
+                         :on-click #(reset! newelem true)])]
+           [:td]]
+          ]]
+        ;; (pr-str @conn)
+        ]])))
 
 
-
+(defcard-rg folding 
+  [folding-table newconn "Investors" "Super Set"])

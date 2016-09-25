@@ -1,6 +1,6 @@
 (ns undead.subs
   (:require [datascript.core :as d]
-            [posh.core :as posh]
+            [posh.core :as posh :refer [posh!]]
             [reagent.core :as r]
             [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
             [undead.util :refer [ssolo]])
