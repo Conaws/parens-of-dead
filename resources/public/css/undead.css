@@ -85,6 +85,15 @@ table {
 }
 
 
+.left-bar {
+    background-color: #008b8b;
+    border: none;
+    width: 8px;
+    padding: 0;
+    margin-right: 15px;
+    margin-bottom: 1px;
+}
+
 
 
 .cell2{

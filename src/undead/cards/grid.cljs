@@ -106,6 +106,8 @@
 ;;   )
 
 
+(declare add-elem-form)
+
 (defn simple-table [conn xtitle ytitle]
   (let [xelems (posh/pull conn '[:node/title {:set/members ...}] [:node/title xtitle])
         ysets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title ytitle])
@@ -119,14 +121,7 @@
                    [:th (:node/title m)])
                  [:th
 
-                  (if @newst 
-                    [x-input {:title ""
-                              :on-stop #(reset! newst false)
-                              :on-save #(addset conn % ytitle) 
-                              }]
-                    [rc/button :label (str "New " ytitle)
-                     :on-click #(reset! newst true)]
-                    )
+                 [add-elem-form conn ytitle] 
 
                   ]]]
         [:tbody
@@ -220,6 +215,24 @@
         ;; )
       )))
 
+(defn add-elem-form [conn parent-title ]
+  (let [newelem (r/atom false)]
+    (fn []
+      (if @newelem [x-input
+                    {:title ""
+                     :on-stop #(reset! newelem false)
+                     :on-save #(do
+                                 (d/transact! conn [{:db/id -1
+                                                     :node/title %
+                                                     :set/_members [:node/title parent-title]}])
+                                 )}
+                    ]
+          [:button.btn.btn-default
+           {:on-click #(reset! newelem true)}
+           (str "New " parent-title )
+          ]))))
+
+
 (defn intersection-table [conn xtitle ytitle]
   (let [xsets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title xtitle])
         ysets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title ytitle])
@@ -240,16 +253,7 @@
            (for [m (:set/members @ysets)]
              [:th (:node/title m)])
            [:th
-
-            (if @newst 
-              [x-input {:title ""
-                        :on-stop #(reset! newst false)
-                        :on-save #(addset conn % ytitle) 
-                        }]
-              [rc/button :class "btn" :label (str "New " ytitle)
-               :on-click #(reset! newst true)]
-              )
-
+            [add-elem-form conn ytitle ]
             ]]]
          [:tbody
           (for [m (:set/members @xsets)]
@@ -380,32 +384,42 @@
 ;; (defcard-rg selecttest2
 ;;   [select-node2])
 
-
+(defn add-elem-form2 [conn parent-title ]
+  (let [newelem (r/atom false)]
+    (fn []
+      (if @newelem [x-input
+                    {:title ""
+                     :on-stop #(reset! newelem false)
+                     :on-save #(do
+                                 (d/transact! conn [{:db/id -1
+                                                     :node/title %
+                                                     :set/_members [:node/title parent-title]}])
+                                 )}
+                    ]
+          [:subs
+           {:on-click #(reset! newelem true)}
+           "+"]))))
 
 (defn simple-folding-sets [conn topgroup]
   (let [root (posh/pull conn '[:node/type :node/title {:set/members ...}] [:node/title topgroup])
-        open (r/atom false)]
+        open (r/atom false)
+        ]
     (fn [conn]
       [:div.nest
        [:div.flex
-          [:button
+          [:button.left-bar
            {:on-click #(swap! open not)}]
         [:label
          {:draggable true}
-         (:node/title @root)]]
+         (:node/title @root)]
+        (when @open
+          [add-elem-form2 conn (:node/title @root)])]
           (when @open
             [:div
              [:ol
               (for [m (:set/members @root)]
-                ;; [:div
-                ;;  [:label (:node/title m)]
-                ;;  [:ol
-                ;;   (for [m (:set/members m)]
-                ;;     [:li
-                ;;      [:label {:draggable true}
-                ;;       (:node/title m)]
-                ;;      ])]])]])
-                [simple-folding-sets conn (:node/title m)])]])
+                [simple-folding-sets conn (:node/title m)])
+              ]])
        ]
       )))
 
