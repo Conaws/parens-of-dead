@@ -384,6 +384,9 @@
 ;; (defcard-rg selecttest2
 ;;   [select-node2])
 
+
+(def currently-dragging (r/atom {}))
+
 (defn add-elem-form2 [conn parent-title ]
   (let [newelem (r/atom false)]
     (fn []
@@ -400,17 +403,42 @@
            {:on-click #(reset! newelem true)}
            "+"]))))
 
+
+
+(defn allow-drop [e]
+  (.preventDefault e))
+
+(defn add-to-set [conn parent-title child-title]
+  (d/transact! conn [{:db/id [:node/title parent-title]
+                      :set/members [:node/title child-title]}]))
+
+(defn drop-add [conn currently-dragging]
+  (let [{:keys [dragging target]} @currently-dragging]
+                   (if (not= dragging target)
+                     (add-to-set conn target dragging))))
+
 (defn simple-folding-sets [conn topgroup]
   (let [root (posh/pull conn '[:node/type :node/title {:set/members ...}] [:node/title topgroup])
         open (r/atom false)
+        hovered (r/atom false)
         ]
-    (fn [conn]
+    (fn [conn topgroup]
       [:div.nest
+       {:on-drag-enter #(do
+                          (allow-drop %)
+                          (reset! hovered true))}
+
        [:div.flex
           [:button.left-bar
            {:on-click #(swap! open not)}]
         [:label
-         {:draggable true}
+         {:draggable true
+          :on-drag-start #(swap! currently-dragging assoc :dragging topgroup)
+          ;; :on-drag-end #_(let [{:keys [dragging target]} @currently-dragging]
+          ;;                 (if (not= dragging target)
+          ;;                   (add-to-set conn target dragging)))
+          :on-drop #(js/alert "dropped item")
+          }
          (:node/title @root)]
         (when @open
           [add-elem-form2 conn (:node/title @root)])]
@@ -419,6 +447,24 @@
              [:ol
               (for [m (:set/members @root)]
                 [simple-folding-sets conn (:node/title m)])
+
+              (if @hovered
+                [:div.dropzone
+                 {:on-drag-enter #(do
+                                    (allow-drop %)
+                                    (swap! currently-dragging assoc :target topgroup))
+                  :on-drag-over allow-drop
+                  :on-drop #(drop-add conn currently-dragging)
+                  }
+                 (if-let [{:keys [dragging target] :as e }@currently-dragging]
+                   (if (= topgroup target)
+                     (pr-str e))
+                   )
+                 ]
+                [:label "drop here"]
+                )
+
+
               ]])
        ]
       )))
@@ -426,5 +472,8 @@
 
 
 (defcard-rg fold
-  [simple-folding-sets newconn "Investor Sets"]
+  [:div.flex.nest
+   {:style {:justify-content "space-between"}}
+   [simple-folding-sets newconn "Investors"]
+   [simple-folding-sets newconn "Investor Sets"]]
   )

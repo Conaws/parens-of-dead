@@ -95,6 +95,12 @@ table {
 }
 
 
+.dropzone {
+    background-color: #00cdcd;
+    height: 40px;
+
+}
+
 
 .cell2{
     height: 200px;
