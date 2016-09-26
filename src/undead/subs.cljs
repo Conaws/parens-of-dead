@@ -1,8 +1,9 @@
 (ns undead.subs
-  (:require [datascript.core :as d]
-            [posh.core :as posh :refer [posh!]]
+  (:require [clojure.set :as set]
+            [datascript.core :as d]
             [reagent.core :as r]
-            [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
+            [posh.core :as posh :refer [posh!]]
+            [re-frame.core :refer [dispatch reg-event-db reg-sub]]
             [undead.util :refer [ssolo]])
   (:require-macros [undead.subs :refer [deftrack]]))
 
@@ -203,3 +204,5 @@
                          m))
                      @nodes))))
 
+(defn by-title [conn title]
+  (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title title]))

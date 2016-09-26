@@ -289,14 +289,33 @@
   [intersection-table newconn "Investor Sets" "Investor Sets"])
 
 
+
+(defn interdrop [conn m s]
+  (let [inner-sets (:set/members s)
+        matching-inner (->> inner-sets
+                            (select [ALL (sp/selected? [:set/members #(-> %
+                                                                          set
+                                                                          (contains? m))])
+                                     :node/title])) ]
+    [:td
+     (pr-str matching-inner)
+     #_[rc/selection-list
+               :choices (r/atom (vec (range 10)))
+               :model (r/atom (vec (range 10)))
+        :on-change #(js/alert %)]
+     ]
+    ;; [:td (pr-str choices)]
+))
+
+
+
 (defn folding-table [conn xtitle ytitle]
-  (let [xsets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title xtitle])
-        ysets (posh/pull conn '[:node/title :node/type {:set/members ...}] [:node/title ytitle])
+  (let [xsets (subs/by-title conn xtitle)
+        ysets (subs/by-title conn ytitle)
         newelem (r/atom false)
         newst (r/atom false)]
     (fn []
       [:div
-       
        [:div.gridtest
         [rc/title :label "Nested Sets"
          :level :level1
@@ -324,14 +343,7 @@
           (for [m (:set/members @xsets)]
             [:tr [:th (:node/title m)][:th]
              (for [s (:set/members @ysets)]
-               (let [inner-sets (:set/members s)
-                     matching-inner (->> inner-sets
-                                         (select [ALL (sp/selected? [:set/members #(-> %
-                                                                                       set
-                                                                                       (contains? m))])
-                                                  :node/title]) )]
-
-                 [:td (pr-str matching-inner)])
+              [interdrop conn m s] 
                )])
           [:tr [:td (if @newelem [x-input
                                   {:title ""
@@ -352,3 +364,53 @@
 
 (defcard-rg folding 
   [folding-table newconn "Investors" "Super Set"])
+
+
+;; (defn selections [choices starting-selections]
+;;   (let [
+;;         selection-id (r/atom (set starting-selections))]
+;;     (fn []
+;;       [rc/selection-list
+;;        :choices sorted-nodes
+;;        :model selection-id
+;;        :on-change #(reset! selection-id %)]
+;;                ]))
+
+
+;; (defcard-rg selecttest2
+;;   [select-node2])
+
+
+
+(defn simple-folding-sets [conn topgroup]
+  (let [root (posh/pull conn '[:node/type :node/title {:set/members ...}] [:node/title topgroup])
+        open (r/atom false)]
+    (fn [conn]
+      [:div.nest
+       [:div.flex
+          [:button
+           {:on-click #(swap! open not)}]
+        [:label
+         {:draggable true}
+         (:node/title @root)]]
+          (when @open
+            [:div
+             [:ol
+              (for [m (:set/members @root)]
+                ;; [:div
+                ;;  [:label (:node/title m)]
+                ;;  [:ol
+                ;;   (for [m (:set/members m)]
+                ;;     [:li
+                ;;      [:label {:draggable true}
+                ;;       (:node/title m)]
+                ;;      ])]])]])
+                [simple-folding-sets conn (:node/title m)])]])
+       ]
+      )))
+
+
+
+(defcard-rg fold
+  [simple-folding-sets newconn "Investor Sets"]
+  )
