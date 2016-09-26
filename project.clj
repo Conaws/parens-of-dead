@@ -31,8 +31,10 @@
                    :cljsbuild {:builds [{:id :main
                                          :source-paths ["src" "dev"]
                                          :figwheel true
-                                         :compiler {:output-to "target/classes/public/app.js"
-                                                    :output-dir "target/classes/public/out"
+                                         :compiler {:main undead.client
+                                                    :asset-path "js/app"
+                                                    :output-to  "resources/public/js/compiled/app.js"
+                                                    :output-dir "resources/public/js/app"
                                                     :optimizations :none
                                                     :recompile-dependents true
                                                     :source-map true}}
