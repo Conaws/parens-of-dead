@@ -474,6 +474,21 @@
 (defcard-rg fold
   [:div.flex.nest
    {:style {:justify-content "space-between"}}
-   [simple-folding-sets newconn "Investors"]
-   [simple-folding-sets newconn "Investor Sets"]]
+   [simple-folding-sets newconn "Investors" true]
+   [simple-folding-sets newconn "Investor Sets" true]]
+  )
+
+
+
+(defcard-rg lint
+  [:ol#bso
+   [:li.linkz>div.linkz "aaaa aaa"]
+   [:li>a.linkz"aaaa aaa"]])
+
+(defcard-rg navy
+  [:ul.nav
+   [:li [:a "A"]
+    [:div.nav__dropdown>div.megadropdown]]
+   [:li [:a "B"]]
+   [:li [:a "C"]]]
   )
