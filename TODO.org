@@ -1,0 +1,8 @@
+* Todos
+** TODO  Play with color scheme      <2016-09-22 Thu 06:23>
+ 
+Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
+** Understand custom layouts
+** TODO  distinguish sets and nodes?      <2016-09-26 Mon 06:48>
+ 
+ Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs
