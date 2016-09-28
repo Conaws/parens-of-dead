@@ -11,7 +11,10 @@
 
 .show { display: inline-block;}
 
+.tree { background-color: blue;}
 
+#bso .tree textarea {height: 500px;
+                     min-width: 50%;}
 
 
 

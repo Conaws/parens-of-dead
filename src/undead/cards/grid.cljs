@@ -1,16 +1,17 @@
 (ns undead.cards.grid
   (:require [cljs-time.core :refer [now]]
+            [clojure.set :as set]
+            [clojure.string :as str]
+            [com.rpl.specter :as sp :refer [ALL]]
             [datascript.core :as d]
             [posh.core :as posh :refer [posh!]]
-            [re-com.core :as rc :refer [button v-box]]
-            [com.rpl.specter :as sp :refer [ALL filterer]]
+            [re-com.core :as rc :refer [v-box]]
             [reagent.core :as r]
-            [undead.subs :as subs :refer [e conn]]
-            [clojure.set :as set]
-            )
-  (:require-macros [com.rpl.specter.macros  :refer [select select-one
-                                                    setval transform]]
-                   [devcards.core :refer [defcard-rg]]))
+            [undead.subs :as subs :refer [conn e]])
+  (:require-macros
+   [com.rpl.specter.macros :refer [select]]
+   [devcards.core :refer [defcard-rg]]
+   [undead.subs :refer [deftrack]]))
 
 (def datatom (r/atom (now)))
 
@@ -519,7 +520,7 @@
 
   )
 
-(defcard-rg showtest
+#_(defcard-rg showtest
   [shows [{:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
            :title "film"}
           {:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
@@ -538,3 +539,76 @@
    ]
   )
 
+
+(defn count-tabs
+  [string]
+  (count (take-while #{\tab} string)))
+
+
+
+
+(defn parsed [text]
+  (->> (str/split text #"\n")
+       (map (juxt count-tabs str/trim))))
+
+(defn parsed-with-index [text]
+  (->> (str/split text #"\n")
+       (map-indexed (juxt (fn [i x] (count-tabs x))
+                          (fn [i x] [i (str/trim x)])))))
+
+
+
+
+(deftrack parsed-track [text]
+  (parsed text))
+
+
+(defn transform-depthvec [nodefn edgefn sibling-collector nseq]
+  (loop [result []
+         s nseq]
+    (let[[pdepth ptitle] (first s)
+         [children siblings] (split-with #(< pdepth (first %)) (rest s))
+         answer   (nodefn ptitle)
+         answer
+         (if (seq children)
+           (edgefn answer (transform-depthvec nodefn edgefn sibling-collector children))
+           answer)]
+      (if (seq siblings)
+        (recur (sibling-collector result answer) siblings)
+        (sibling-collector result answer)))))
+
+
+
+(defn create-node-map
+  [title]
+  {:node/title title})
+
+(defn connect-node [node children]
+  (assoc node :set/members children ))
+
+
+
+
+(def depthvec->tree
+  (partial transform-depthvec create-node-map connect-node conj))
+
+(defonce teststring (r/atom "A\n\tB\n\t\tC"))
+
+(deftrack tracktest [string]
+  (depthvec->tree (parsed string)))
+
+
+(defn tree-input [stringatom]
+  [:div#bso
+   [:div.tree.flex
+    [:textarea {:value @stringatom
+                :on-change #(reset! stringatom (-> % .-target .-value))}]
+    [:div (pr-str @(tracktest @stringatom))]
+    ]]
+  )
+
+(defcard-rg look
+ [tree-input teststring] 
+  teststring
+  {:inspect-data true
+   :history true})
