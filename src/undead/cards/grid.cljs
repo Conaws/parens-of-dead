@@ -5,7 +5,7 @@
             [com.rpl.specter :as sp :refer [ALL]]
             [datascript.core :as d]
             [posh.core :as posh :refer [posh!]]
-            [re-com.core :as rc :refer [v-box]]
+            [re-com.core :as rc :refer [v-box box h-box]]
             [reagent.core :as r]
             [undead.subs :as subs :refer [conn e]])
   (:require-macros
@@ -628,38 +628,33 @@
     :else))
 
 
-(defn node-test [conn title members]
+(defn node-test [conn {title :node/title members :set/members :as node}]
   (let [existing @(posh/q conn '[:find ?e
                                   :in $ ?title
                                   :where
                                   [?e :node/title ?title]]
                             title)]
-    [:div
-     (if-let [ex (ffirst existing)]
-       [:button (pr-str ex)]
-       [:li title])
-     [:li>div
-      (pr-str title members)]] )
-  )
+    [:div.tree
+     [:div.tree-node
+      [:button.circle]
+      (if-let [ex (ffirst existing)]
+        [:button title]
+        [:p title])]
+     [:div.tree-children
+      (for [m members]
+        [node-test conn m])]]))
+
 
 
 (defn tree-view [stringatom]
   (let [tree @(tracktest (:text @stringatom))]
-    [:ol (for [{t :node/title c :set/members} tree]
-           [node-test newconn t c]
-
-           #_(if-let [existing-node (posh/pull newconn '[*] [:node/title t])]
-             [:li>div
-              (pr-str t c existing-node)]
-             [:li>div
-              (pr-str t c)]))
-     
-     ]))
+    [:div (for [node tree]
+                [node-test newconn node])]))
 
 
 (defn tree-input [stringatom]
   [:div#bso
-   [:div.tree.flex
+   [:div.layout-split.flex
     [:textarea {:value (:text @stringatom)
                 :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
                 :on-key-down handle-tab-down}]
@@ -667,8 +662,11 @@
     ]]
   )
 
+
 (defcard-rg look
  [tree-input teststring] 
   teststring
   {:inspect-data true
    :history true})
+
+

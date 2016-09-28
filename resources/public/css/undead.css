@@ -11,12 +11,42 @@
 
 .show { display: inline-block;}
 
-.tree { }
 
-#bso .tree textarea {height: 500px;
+#bso .layout-split textarea {height: 500px;
                      min-width: 50%;}
 
+.layout-column {display: flex;
+                flex-flow: column;}
 
+
+
+
+.tree {
+    /* background-color: grey; */
+    /* color: white; */
+    /* opacity: 0.9; */
+}
+
+.tree-node {
+    display: flex;
+}
+
+.circle {
+    border-radius: 10px;
+    height: 15px;
+    width: 15px;
+    background-color: white;
+    border: 1px solid black;
+    align-self: center;
+    margin-left: 13px;
+    margin-right: 13px;
+}
+
+
+.tree-children {
+    margin-left: 20px;
+    border-left: 1px solid black;
+}
 
 
 
