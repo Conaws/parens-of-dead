@@ -549,6 +549,7 @@
 
 (defn parsed [text]
   (->> (str/split text #"\n")
+       (filter (comp not str/blank?))
        (map (juxt count-tabs str/trim))))
 
 (defn parsed-with-index [text]
@@ -559,8 +560,6 @@
 
 
 
-(deftrack parsed-track [text]
-  (parsed text))
 
 
 (defn transform-depthvec [nodefn edgefn sibling-collector nseq]
