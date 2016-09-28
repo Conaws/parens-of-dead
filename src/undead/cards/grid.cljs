@@ -588,21 +588,54 @@
 
 
 
+
 (def depthvec->tree
   (partial transform-depthvec create-node-map connect-node conj))
 
-(defonce teststring (r/atom "A\n\tB\n\t\tC"))
+(defonce teststring (r/atom {:text "A\n\tB\n\t\tC"}))
 
 (deftrack tracktest [string]
   (depthvec->tree (parsed string)))
 
 
+
+
+(defn event-handler [db [event-name & event-vec]]
+  (js/console.log (pr-str  db event-name event-vec))
+  (case event-name
+    :tab-down
+    (let [text (:text db)
+          [start end] event-vec
+          newstring (str (subs text 0 start) "\t"  (subs text end))]
+      (js/console.log (pr-str newstring))
+        (assoc db :text (str (subs text 0 start) "\t"  (subs text end))))
+    ))
+
+
+
+(defn emit [e]
+  (do (js/console.log "handle event" (pr-str e))
+      (r/rswap! teststring event-handler e)))
+
+
+(defn handle-tab-down [e]
+  (case (.-which e)
+    9 (do
+        (emit [:tab-down
+                   (-> e .-target .-selectionStart)
+               (-> e .-target .-selectionEnd)])
+        (.preventDefault e))
+    :else)
+
+  )
+
 (defn tree-input [stringatom]
   [:div#bso
    [:div.tree.flex
-    [:textarea {:value @stringatom
-                :on-change #(reset! stringatom (-> % .-target .-value))}]
-    [:div (pr-str @(tracktest @stringatom))]
+    [:textarea {:value (:text @stringatom)
+                :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
+                :on-key-down handle-tab-down}]
+    [:div (pr-str @(tracktest (:text @stringatom)))]
     ]]
   )
 
