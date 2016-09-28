@@ -625,9 +625,37 @@
                    (-> e .-target .-selectionStart)
                (-> e .-target .-selectionEnd)])
         (.preventDefault e))
-    :else)
+    :else))
 
+
+(defn node-test [conn title members]
+  (let [existing @(posh/q conn '[:find ?e
+                                  :in $ ?title
+                                  :where
+                                  [?e :node/title ?title]]
+                            title)]
+    [:div
+     (if-let [ex (ffirst existing)]
+       [:button (pr-str ex)]
+       [:li title])
+     [:li>div
+      (pr-str title members)]] )
   )
+
+
+(defn tree-view [stringatom]
+  (let [tree @(tracktest (:text @stringatom))]
+    [:ol (for [{t :node/title c :set/members} tree]
+           [node-test newconn t c]
+
+           #_(if-let [existing-node (posh/pull newconn '[*] [:node/title t])]
+             [:li>div
+              (pr-str t c existing-node)]
+             [:li>div
+              (pr-str t c)]))
+     
+     ]))
+
 
 (defn tree-input [stringatom]
   [:div#bso
@@ -635,7 +663,7 @@
     [:textarea {:value (:text @stringatom)
                 :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
                 :on-key-down handle-tab-down}]
-    [:div (pr-str @(tracktest (:text @stringatom)))]
+    [tree-view stringatom]
     ]]
   )
 
