@@ -3,7 +3,7 @@
             [datascript.core :as d]
             [posh.core :as posh :refer [posh!]]
             [re-com.core :as rc :refer [button v-box]]
-            [com.rpl.specter :as sp :refer [ALL filterer]] 
+            [com.rpl.specter :as sp :refer [ALL filterer]]
             [reagent.core :as r]
             [undead.subs :as subs :refer [e conn]]
             [clojure.set :as set]
@@ -35,7 +35,7 @@
     :node/type :set
     :node/title "Scheduled"
     :set/members [[:node/title "Peter Thiel"]
-                
+
                   ]}
    {:db/id -6
     :node/type :set
@@ -121,7 +121,7 @@
                    [:th (:node/title m)])
                  [:th
 
-                 [add-elem-form conn ytitle] 
+                  [add-elem-form conn ytitle]
 
                   ]]]
         [:tbody
@@ -132,20 +132,20 @@
                 [:td.active
                  {:on-click
                   #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
-                  
+
                   }"Y"]
                 [:td
                  {:on-click
                   #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
                   }"N"]))])
          [:tr [:td (if @newelem [x-input
-                                {:title ""
-                                 :on-stop #(reset! newelem false)
-                                 :on-save #(do
-                                             (d/transact! conn [{:db/id -1
-                                                                 :node/title %
-                                                                 :set/_members [:node/title xtitle]}])
-                                             )}
+                                 {:title ""
+                                  :on-stop #(reset! newelem false)
+                                  :on-save #(do
+                                              (d/transact! conn [{:db/id -1
+                                                                  :node/title %
+                                                                  :set/_members [:node/title xtitle]}])
+                                              )}
                                  ]
                        [rc/button :label (str "New " xtitle )
                         :on-click #(reset! newelem true)])]
@@ -197,7 +197,7 @@
                   ]
                  ]]]))
 (defcard-rg tabledrawa
- [testa] 
+  [testa]
   )
 
 
@@ -211,8 +211,8 @@
                       (e y))]
     (fn []
       [:td (pr-str @inter)]     ;; (if (= x y)
-        ;; [:td.active "\\"]
-        ;; )
+      ;; [:td.active "\\"]
+      ;; )
       )))
 
 (defn add-elem-form [conn parent-title ]
@@ -230,7 +230,7 @@
           [:button.btn.btn-default
            {:on-click #(reset! newelem true)}
            (str "New " parent-title )
-          ]))))
+           ]))))
 
 
 (defn intersection-table [conn xtitle ytitle]
@@ -240,7 +240,7 @@
         newst (r/atom false)]
     (fn []
       [:div
-       
+
        [:div.gridtest
         [rc/title :label "Intersection"
          :level :level1
@@ -289,7 +289,7 @@
 
 
 
-(defcard-rg intertable 
+(defcard-rg intertable
   [intersection-table newconn "Investor Sets" "Investor Sets"])
 
 
@@ -304,12 +304,12 @@
     [:td
      (pr-str matching-inner)
      #_[rc/selection-list
-               :choices (r/atom (vec (range 10)))
-               :model (r/atom (vec (range 10)))
+        :choices (r/atom (vec (range 10)))
+        :model (r/atom (vec (range 10)))
         :on-change #(js/alert %)]
      ]
     ;; [:td (pr-str choices)]
-))
+    ))
 
 
 
@@ -333,10 +333,10 @@
              [:th (:node/title m)])
            [:th
 
-            (if @newst 
+            (if @newst
               [x-input {:title ""
                         :on-stop #(reset! newst false)
-                        :on-save #(addset conn % ytitle) 
+                        :on-save #(addset conn % ytitle)
                         }]
               [rc/button :class "btn" :label (str "New " ytitle)
                :on-click #(reset! newst true)]
@@ -347,7 +347,7 @@
           (for [m (:set/members @xsets)]
             [:tr [:th (:node/title m)][:th]
              (for [s (:set/members @ysets)]
-              [interdrop conn m s] 
+               [interdrop conn m s]
                )])
           [:tr [:td (if @newelem [x-input
                                   {:title ""
@@ -366,7 +366,7 @@
         ]])))
 
 
-(defcard-rg folding 
+(defcard-rg folding
   [folding-table newconn "Investors" "Super Set"])
 
 
@@ -414,60 +414,59 @@
 
 (defn drop-add [conn currently-dragging]
   (let [{:keys [dragging target]} @currently-dragging]
-                   (if (not= dragging target)
-                     (add-to-set conn target dragging))))
+    (if (not= dragging target)
+      (add-to-set conn target dragging))))
 
-(defn simple-folding-sets [conn topgroup]
+(defn simple-folding-sets [conn topgroup open]
   (let [root (posh/pull conn '[:node/type :node/title {:set/members ...}] [:node/title topgroup])
-        open (r/atom false)
-        hovered (r/atom false)
-        ]
+        open (r/atom open)
+        hovered (r/atom false)]
     (fn [conn topgroup]
       [:div.nest
        {:on-drag-enter #(do
                           (allow-drop %)
-                          (reset! hovered true))}
+                          (reset! hovered true))
+        :on-drag-over allow-drop
+        :on-drag-exit #(reset! hovered false)
+        :on-mouse-leave #(reset! hovered false)}
 
        [:div.flex
-          [:button.left-bar
-           {:on-click #(swap! open not)}]
+        [:button.left-bar
+         {:on-click #(swap! open not)}]
         [:label
          {:draggable true
-          :on-drag-start #(swap! currently-dragging assoc :dragging topgroup)
-          ;; :on-drag-end #_(let [{:keys [dragging target]} @currently-dragging]
-          ;;                 (if (not= dragging target)
-          ;;                   (add-to-set conn target dragging)))
-          :on-drop #(js/alert "dropped item")
-          }
+          :on-drag-start #(swap! currently-dragging assoc :dragging topgroup)}
          (:node/title @root)]
+        (pr-str @hovered)
         (when @open
           [add-elem-form2 conn (:node/title @root)])]
-          (when @open
-            [:div
-             [:ol
-              (for [m (:set/members @root)]
-                [simple-folding-sets conn (:node/title m)])
+       (when @open
+         [:div
+          [:ol
+           (for [m (:set/members @root)]
+             [simple-folding-sets conn (:node/title m) open])
 
-              (if @hovered
-                [:div.dropzone
-                 {:on-drag-enter #(do
-                                    (allow-drop %)
-                                    (swap! currently-dragging assoc :target topgroup))
-                  :on-drag-over allow-drop
-                  :on-drop #(drop-add conn currently-dragging)
-                  }
-                 (if-let [{:keys [dragging target] :as e }@currently-dragging]
-                   (if (= topgroup target)
-                     (pr-str e))
-                   )
-                 ]
-                [:label "drop here"]
-                )
+           (if @hovered
+             [:div.dropzone
+              {:on-drag-enter #(do
+                                 (allow-drop %)
+                                 (swap! currently-dragging assoc :target topgroup))
+               :on-drag-over allow-drop
+               :on-drop #(drop-add conn currently-dragging)
+               }
+              (if-let [{:keys [dragging target] :as e } @currently-dragging]
+                (if (= topgroup target)
+                  (pr-str e))
+  )
+              ]
+             [:label "drop here"]
+             )
 
 
-              ]])
+           ]])
        ]
       )))
+
 
 
 
@@ -486,9 +485,56 @@
    [:li>a.linkz"aaaa aaa"]])
 
 (defcard-rg navy
-  [:ul.nav
-   [:li [:a "A"]
-    [:div.nav__dropdown>div.megadropdown]]
-   [:li [:a "B"]]
-   [:li [:a "C"]]]
+  [:div#bso
+   [:ul.nav
+    [:li [:a "A"]
+     [:div.nav__dropdown>div.megadropdown]]
+    [:li [:a "B"]]
+    [:li [:a "C"]]]]
   )
+
+
+
+(defn show [{:keys [img title] :as s}]
+  [:div
+   [:a
+    [:img {:src img}]
+    [:h3 title]]
+   ])
+
+(defn shows [shows]
+  [:div#bso
+   [:div.box
+    [:h1 "New"]
+    [:div.box-body
+     (for [s shows]
+       [show s])
+     ]
+    [:div.box-footer>a "More New Episodes"]]
+
+   [:div.layout-content>div.box
+    
+    ]
+   ]
+
+  )
+
+(defcard-rg showtest
+  [shows [{:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
+           :title "film"}
+          {:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
+           :title "film"}
+          {:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
+           :title "film"}
+          {:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
+           :title "film"}
+          {:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
+           :title "film"}
+          {:img "https://images.bewakoof.com/utter/content-rich-movies-9-low-budget-films-that-didnt-receive-the-spotlight.jpg"
+           :title "film"}]
+
+
+
+   ]
+  )
+
