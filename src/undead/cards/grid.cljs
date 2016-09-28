@@ -595,7 +595,7 @@
 (defonce teststring (r/atom {:text "A\n\tB\n\t\tC"}))
 
 (deftrack tracktest [string]
-  (depthvec->tree (parsed string)))
+  (depthvec->tree (parsed (:text @string))))
 
 
 
@@ -639,15 +639,17 @@
       [:button.circle]
       (if-let [ex (ffirst existing)]
         [:button title]
-        [:p title])]
+        [:b title])]
      [:div.tree-children
       (for [m members]
         [node-test conn m])]]))
 
 
+(defonce parsed-string (tracktest teststring))
+
 
 (defn tree-view [stringatom]
-  (let [tree @(tracktest (:text @stringatom))]
+  (let [tree @parsed-string]
     [:div (for [node tree]
                 [node-test newconn node])]))
 
@@ -669,4 +671,11 @@
   {:inspect-data true
    :history true})
 
+(defcard-rg testtransact
+  [:div
+   [:button {:on-click 
+             #(d/transact! newconn @parsed-string)}]
+   (pr-str @newconn)
+   ]
 
+  )
