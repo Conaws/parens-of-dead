@@ -6,3 +6,15 @@ Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
 ** TODO  distinguish sets and nodes?      <2016-09-26 Mon 06:48>
  
  Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs
+** TODO  clean up event handler      <2016-09-28 Wed 20:11>
+ (defn event-handler [db [event-name & event-vec]]
+   (js/console.log (pr-str  db event-name event-vec))
+   (case event-name
+     :tab-down
+     (let [text (:text db)
+           [start end] event-vec
+           newstring (str (subs text 0 start) "\t"  (subs text end))]
+       (js/console.log (pr-str newstring))
+         (assoc db :text (str (subs text 0 start) "\t"  (subs text end))))
+     ))
+ Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(defn%20event-handler%20%5Bdb%20%5Bevent-name%20&%20event-vec%5D%5D%0A%20(js/console.log%20(pr-str%20db%20event-name%20event-vec))%0A%20(case%20event-name%0A%20:tab-down%0A%20(let%20%5Btext%20(:text%20db)%0A%20%5Bstart%20end%5D%20event-vec%0A%20newstring%20(str%20(subs%20text%200%20start)%20"\t"%20(subs%20text%20end))%5D%0A%20(js/console.log%20(pr-str%20newstring))%0A%20(assoc%20db%20:text%20(str%20(subs%20text%200%20start)%20"\t"%20(subs%20text%20end))))%0A%20))

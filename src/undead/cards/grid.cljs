@@ -7,7 +7,8 @@
             [posh.core :as posh :refer [posh!]]
             [re-com.core :as rc :refer [v-box box h-box]]
             [reagent.core :as r]
-            [undead.subs :as subs :refer [conn e]])
+            [undead.subs :as subs :refer [conn e]]
+            [clojure.string :as str])
   (:require-macros
    [com.rpl.specter.macros :refer [select]]
    [devcards.core :refer [defcard-rg]]
@@ -580,7 +581,9 @@
 
 (defn create-node-map
   [title]
-  {:node/title title})
+  (if (str/starts-with? title "<|")
+    {:node/title "Parent"}
+    {:node/title title}))
 
 (defn connect-node [node children]
   (assoc node :set/members children ))
@@ -638,7 +641,7 @@
      [:div.tree-node
       [:button.circle]
       (if-let [ex (ffirst existing)]
-        [:button title]
+        [:button.btn title]
         [:b title])]
      [:div.tree-children
       (for [m members]
@@ -657,6 +660,8 @@
 (defn tree-input [stringatom]
   [:div#bso
    [:div.layout-split.flex
+    [:button.btn {:on-click 
+              #(d/transact! newconn @parsed-string)}]
     [:textarea {:value (:text @stringatom)
                 :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
                 :on-key-down handle-tab-down}]
@@ -679,3 +684,21 @@
    ]
 
   )
+
+(defn node-tes []
+  [:label.node
+
+   [:div.node-id
+    [:div 45]]
+
+   "Just a quick visualization"
+
+   [:span.node-parents 4]
+   [:span.node-children 2]
+
+   ]
+
+  )
+
+(defcard-rg nodecss
+  [node-tes])
