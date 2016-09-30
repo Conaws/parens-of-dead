@@ -5,6 +5,7 @@
             [com.rpl.specter :as sp :refer [ALL]]
             [datascript.core :as d]
             [posh.core :as posh :refer [posh!]]
+            [undead.test :refer [title-parse]]
             [re-com.core :as rc :refer [v-box box h-box]]
             [reagent.core :as r]
             [undead.subs :as subs :refer [conn e]]
@@ -488,9 +489,13 @@
 
 (defcard-rg navy
   [:div#bso
-   [:ul.nav
+   [:ul.flex.nav
     [:li [:a "A"]
-     [:div.nav__dropdown>div.megadropdown]]
+     [:div.nav__dropdown>div.megadropdown
+
+"Cras placerat accumsan nulla.  Nulla facilisis, risus a rhoncus fermentum, tellus tellus lacinia purus, et dictum nunc justo sit amet elit.  "
+
+      ]]
     [:li [:a "B"]]
     [:li [:a "C"]]]]
   )
@@ -697,8 +702,62 @@
    [:span.node-children 2]
 
    ]
+)
 
+
+
+
+
+
+
+(defcard-rg sticky-list
+  [:div
+   [:dl
+    [:dt "A"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]]
+   [:dl
+    [:dt "b"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]
+    [:dd "a termm"]]
+    [:dl
+     [:dt "d"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]]
+    [:dl
+     [:dt "c"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     [:dd "a termm"]
+     ]]
   )
 
 (defcard-rg nodecss
   [node-tes])
+(defcard-rg testtransact2
+  [:div
+   [:button {:on-click 
+             #(d/transact! newconn @parsed-string)}]
+   (pr-str @newconn)
+   ]
+
+  )
