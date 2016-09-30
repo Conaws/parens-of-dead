@@ -18,3 +18,6 @@ Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
          (assoc db :text (str (subs text 0 start) "\t"  (subs text end))))
      ))
  Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(defn%20event-handler%20%5Bdb%20%5Bevent-name%20&%20event-vec%5D%5D%0A%20(js/console.log%20(pr-str%20db%20event-name%20event-vec))%0A%20(case%20event-name%0A%20:tab-down%0A%20(let%20%5Btext%20(:text%20db)%0A%20%5Bstart%20end%5D%20event-vec%0A%20newstring%20(str%20(subs%20text%200%20start)%20"\t"%20(subs%20text%20end))%5D%0A%20(js/console.log%20(pr-str%20newstring))%0A%20(assoc%20db%20:text%20(str%20(subs%20text%200%20start)%20"\t"%20(subs%20text%20end))))%0A%20))
+** TODO  Clean up child types in the transact      <2016-09-30 Fri 20:22>
+ 
+ Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(defn%20connect-node%20%5Bnode%20children%5D

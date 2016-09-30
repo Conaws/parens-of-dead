@@ -5,7 +5,7 @@
             [com.rpl.specter :as sp :refer [ALL]]
             [datascript.core :as d]
             [posh.core :as posh :refer [posh!]]
-            [undead.test :refer [title-parse]]
+;            [undead.test :refer [title-parse]]
             [re-com.core :as rc :refer [v-box box h-box]]
             [reagent.core :as r]
             [undead.subs :as subs :refer [conn e]]
@@ -584,14 +584,28 @@
 
 
 
+(defn title-parse [matcher title]
+  (if (str/starts-with? title matcher)
+    (let [newtitle (str/replace-first title matcher "")]
+      (str/trim newtitle))   )  )
+
+(defn newnode [title]
+  (if-let [t (title-parse "<" title)]
+    {:input/type :parent
+     :node/title t}) )
+
+
 (defn create-node-map
   [title]
-  (if (str/starts-with? title "<|")
-    {:node/title "Parent"}
-    {:node/title title}))
+  (or (newnode title) 
+      {:input/type :child
+       :node/title title}))
 
 (defn connect-node [node children]
-  (assoc node :set/members children ))
+  (let [{c :child p :parent} (group-by :input/type children)]
+    (assoc node
+           :set/members (or c [])
+           :set/_members (or p []))))
 
 
 
@@ -636,7 +650,8 @@
     :else))
 
 
-(defn node-test [conn {title :node/title members :set/members :as node}]
+(defn node-test [conn {title :node/title members :set/members
+                       parents :set/_members :as node}]
   (let [existing @(posh/q conn '[:find ?e
                                   :in $ ?title
                                   :where
@@ -650,13 +665,19 @@
         [:b title])]
      [:div.tree-children
       (for [m members]
-        [node-test conn m])]]))
+        [node-test conn m])
+      (when parents
+        [:div
+         [:h4 "parents"]
+         (for [p parents]
+           [node-test conn p])])]
+     ]))
 
 
 (defonce parsed-string (tracktest teststring))
 
 
-(defn tree-view [stringatom]
+(defn tree-view [parsed-string]
   (let [tree @parsed-string]
     [:div (for [node tree]
                 [node-test newconn node])]))
@@ -670,13 +691,33 @@
     [:textarea {:value (:text @stringatom)
                 :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
                 :on-key-down handle-tab-down}]
-    [tree-view stringatom]
+    [tree-view parsed-string]
     ]]
   )
 
 
+
 (defcard-rg look
  [tree-input teststring] 
+  teststring
+  {:inspect-data true
+   :history true})
+
+
+(defn tree-input2 [stringatom]
+  [:div#bso
+   [:div.layout-split.flex
+    [:button.btn {:on-click 
+                  #(d/transact! newconn @parsed-string)}]
+    [:textarea {:value (:text @stringatom)
+                :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
+                :on-key-down handle-tab-down}]
+    [:div (pr-str @parsed-string)]
+    ]]
+  )
+
+(defcard-rg look2
+  [tree-input2 teststring] 
   teststring
   {:inspect-data true
    :history true})
