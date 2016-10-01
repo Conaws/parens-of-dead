@@ -21,3 +21,15 @@ Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
 ** TODO  Clean up child types in the transact      <2016-09-30 Fri 20:22>
  
  Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(defn%20connect-node%20%5Bnode%20children%5D
+** TODO  Currently, datascript only pulls nodes apart one level deep, I think      <2016-09-30 Fri 23:11>
+ 
+ Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(def%20complexparent-test%20"Investor%20Sets\n\tGreat%20Guys\nInvestors\n\tE%20Pluribus\n\t\t<%20Great%20Guys\n\t\t\tElon%20Musk")
+** TODO  Figure out Created at      <2016-10-01 Sat 16:45>
+ (d/transact! conn [{:name "X"
+                                  :created-at :db/current-tx}
+                                 {:db/id :db/current-tx
+                                  :prop1 "prop1"}
+                                 [:db/add :db/current-tx :prop2 "prop2"]
+                                 [:db/add -1 :name "Y"]
+                                 [:db/add -1 :created-at :db/current-tx]])
+ Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(d/transact!%20conn%20%5B{:name%20"X"%0A%20:created-at%20:db/current-tx}%0A%20{:db/id%20:db/current-tx%0A%20:prop1%20"prop1"}%0A%20%5B:db/add%20:db/current-tx%20:prop2%20"prop2"%5D%0A%20%5B:db/add%20-1%20:name%20"Y"%5D%0A%20%5B:db/add%20-1%20:created-at%20:db/current-tx%5D%5D)

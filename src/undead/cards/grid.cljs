@@ -11,13 +11,14 @@
             [undead.subs :as subs :refer [conn e]]
             [clojure.string :as str])
   (:require-macros
+   [cljs.test  :refer [testing is]]
    [com.rpl.specter.macros :refer [select]]
-   [devcards.core :refer [defcard-rg]]
+   [devcards.core :refer [defcard-rg deftest]]
    [undead.subs :refer [deftrack]]))
 
 (def datatom (r/atom (now)))
 
-(defonce newconn conn)
+(defonce newconn (d/create-conn subs/schema) )
 (posh! newconn)
 
 (def grid-transaction
@@ -120,8 +121,8 @@
       [:div.gridtest
        [:table
         [:thead [:tr [:th xtitle][:th]
-                 (for [m (:set/members @ysets)]
-                   [:th (:node/title m)])
+                 (doall (for [m (:set/members @ysets)]
+                    [:th (:node/title m)]))
                  [:th
 
                   [add-elem-form conn ytitle]
@@ -130,17 +131,17 @@
         [:tbody
          (for [m (:set/members @xelems)]
            [:tr [:th (:node/title m)][:th]
-            (for [s (:set/members @ysets)]
-              (if (contains? (set (:set/members s)) m )
-                [:td.active
-                 {:on-click
-                  #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
+            (doall (for [s (:set/members @ysets)]
+               (if (contains? (set (:set/members s)) m )
+                 [:td.active
+                  {:on-click
+                   #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
 
-                  }"Y"]
-                [:td
-                 {:on-click
-                  #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
-                  }"N"]))])
+                   }"Y"]
+                 [:td
+                  {:on-click
+                   #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
+                   }"N"])))])
          [:tr [:td (if @newelem [x-input
                                  {:title ""
                                   :on-stop #(reset! newelem false)
@@ -253,26 +254,26 @@
          [:thead
           [:tr [:th][:th] [:th.underline {:col-span "5"} ytitle] ]
           [:tr [:th.underline xtitle][:th]
-           (for [m (:set/members @ysets)]
-             [:th (:node/title m)])
+           (doall (for [m (:set/members @ysets)]
+              [:th (:node/title m)]))
            [:th
             [add-elem-form conn ytitle ]
             ]]]
          [:tbody
-          (for [m (:set/members @xsets)]
-            [:tr [:th (:node/title m)][:th]
-             (for [s (:set/members @ysets)]
-               ;; (if (contains? (set (:set/members s)) m )
-               ;;   [:td.active
-               ;;    {:on-click
-               ;;     #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
-               ;;     }"Y"]
-               ;;   [:td
-               ;;    {:on-click
-               ;;     #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
-               ;;     }"N"]))])
-               [intersection-node conn m s]
-               )])
+          (doall (for [m (:set/members @xsets)]
+             [:tr [:th (:node/title m)][:th]
+              (for [s (:set/members @ysets)]
+                ;; (if (contains? (set (:set/members s)) m )
+                ;;   [:td.active
+                ;;    {:on-click
+                ;;     #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
+                ;;     }"Y"]
+                ;;   [:td
+                ;;    {:on-click
+                ;;     #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
+                ;;     }"N"]))])
+                [intersection-node conn m s]
+                )]))
           [:tr [:td (if @newelem [x-input
                                   {:title ""
                                    :on-stop #(reset! newelem false)
@@ -590,9 +591,14 @@
       (str/trim newtitle))   )  )
 
 (defn newnode [title]
-  (if-let [t (title-parse "<" title)]
-    {:input/type :parent
-     :node/title t}) )
+  (or (if-let [t (title-parse "<" title)]
+        {:input/type :parent
+         :node/title t})
+      (if-let [t (title-parse "+" title)]
+        {:input/type :intersection
+         :node/title t})
+
+      ) )
 
 
 (defn create-node-map
@@ -616,8 +622,10 @@
 
 (defonce teststring (r/atom {:text "A\n\tB\n\t\tC"}))
 
-(deftrack tracktest [string]
-  (depthvec->tree (parsed (:text @string))))
+
+
+(deftrack tracktest [db]
+  (depthvec->tree (parsed (:text @db))))
 
 
 
@@ -625,6 +633,10 @@
 (defn event-handler [db [event-name & event-vec]]
   (js/console.log (pr-str  db event-name event-vec))
   (case event-name
+    :change-text
+    (let [[t] event-vec
+          t (or t "")]
+      (assoc db :text t))
     :tab-down
     (let [text (:text db)
           [start end] event-vec
@@ -677,59 +689,51 @@
 (defonce parsed-string (tracktest teststring))
 
 
-(defn tree-view [parsed-string]
-  (let [tree @parsed-string]
+(defn tree-view [conn db]
+  (let [tree @(tracktest db)]
     [:div (for [node tree]
-                [node-test newconn node])]))
+                [node-test conn node])]))
 
 
-(defn tree-input [stringatom]
+(defn tree-input [conn db]
   [:div#bso
    [:div.layout-split.flex
-    [:button.btn {:on-click 
-              #(d/transact! newconn @parsed-string)}]
-    [:textarea {:value (:text @stringatom)
-                :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
+    [:button.btn {:on-click
+                  #(d/transact! conn @(tracktest db))}]
+    [:textarea {:value (:text @db)
+                :on-change #(emit [:change-text (-> % .-target .-value)])
                 :on-key-down handle-tab-down}]
-    [tree-view parsed-string]
-    ]]
+    [tree-view conn db]]
+    [:div.well.bblack (pr-str @(tracktest db))]
+    [:div.well (pr-str @conn)]]
   )
 
 
 
-(defcard-rg look
- [tree-input teststring] 
+(defcard-rg looka
+ [tree-input newconn teststring] 
   teststring
   {:inspect-data true
    :history true})
 
 
-(defn tree-input2 [stringatom]
-  [:div#bso
-   [:div.layout-split.flex
-    [:button.btn {:on-click 
-                  #(d/transact! newconn @parsed-string)}]
-    [:textarea {:value (:text @stringatom)
-                :on-change #(swap! stringatom assoc :text (-> % .-target .-value))
-                :on-key-down handle-tab-down}]
-    [:div (pr-str @parsed-string)]
-    ]]
-  )
 
-(defcard-rg look2
-  [tree-input2 teststring] 
-  teststring
-  {:inspect-data true
-   :history true})
 
-(defcard-rg testtransact
+
+
+
+(defn db-display []
   [:div
    [:button {:on-click 
              #(d/transact! newconn @parsed-string)}]
    (pr-str @newconn)
    ]
-
   )
+
+
+
+(defcard-rg testtransact
+  [db-display])
 
 (defn node-tes []
   [:label.node
@@ -802,3 +806,34 @@
    ]
 
   )
+
+(def complexparent-test "Investor Sets\n\tGreat Guys\nInvestors\n\tE Pluribus\n\t\t< Great Guys\n\t\t\tElon Musk")
+
+(def more-complex 
+  "Investor Sets\n\tGreat People\n\t\tEmmit Smith\nBennet Smith\n\t< Awesome Folks\n\t
+  t< Investor Sets\nWill Smith\n\t< Fantastic People\n\t\t< Investor Sets")
+
+
+
+(deftest test-resolve-current-tx
+  (let [conn (d/create-conn {:created-at {:db/valueType :db.type/ref}})
+        tx1  (d/transact! conn [{:name "X"
+                                 :created-at :db/current-tx}
+                                {:db/id :db/current-tx
+                                 :prop1 "prop1"}
+                                [:db/add :db/current-tx :prop2 "prop2"]
+                                [:db/add -1 :name "Y"]
+                                [:db/add -1 :created-at :db/current-tx]])]
+    (is (= (d/q '[:find ?e ?a ?v :where [?e ?a ?v]] @conn)
+           #{[1 :name "X"]
+             [1 :created-at (+ d/tx0 1)]
+             [(+ d/tx0 1) :prop1 "prop1"]
+             [(+ d/tx0 1) :prop2 "prop2"]
+             [2 :name "Y"]
+             [2 :created-at (+ d/tx0 1)]}))
+    (is (= (:tempids tx1) {-1 2, :db/current-tx (+ d/tx0 1)}))
+    (let [tx2   (d/transact! conn [[:db/add :db/current-tx :prop3 "prop3"]])
+          tx-id (get-in tx2 [:tempids :db/current-tx])]
+      (is (= tx-id (+ d/tx0 2)))
+      (is (= (into {} (d/entity @conn tx-id))
+             {:prop3 "prop3"})))))
