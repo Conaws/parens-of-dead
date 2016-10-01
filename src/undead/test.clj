@@ -48,9 +48,6 @@
 
 
 
-(newnode "< Peter Thiel")
-
-
 (defn divisible-by [number divisor]
   (zero? (mod number divisor)))
 
@@ -63,3 +60,10 @@
 
 (pprint (for [n (range 200)]
          (say n)))
+
+
+(defn string-between [between s]
+  (apply str (rest (interleave (repeat between) s))))
+
+
+(string-between "+" [1 2 3])

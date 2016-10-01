@@ -7,6 +7,7 @@
    [undead.cards.logic]
    [undead.cards.labels]
    [undead.cards.grid]
+   [undead.cards.dstests]
    [undead.cards.auto]
    [undead.cards.d3]
    [undead.cards.keys]

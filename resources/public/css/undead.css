@@ -78,12 +78,25 @@
     margin-right: 13px;
 }
 
+#bso .btn-intersection {
+    background-color: #2b2b2b;
+    color: white;
+    font-size: 80%;
+    border-radius: 2px;
 
+}
 .tree-children {
     margin-left: 20px;
     border-left: 1px solid black;
+    
+        /* opacity: 50%; */
 }
-
+.tree-children-parents {
+    margin-left: 40px;
+    font-size: 50%;
+    background-color: LightSlateGray;
+        /* opacity: 50%; */
+}
 
 .node {
     border: 0.5px solid LightSlateGray;

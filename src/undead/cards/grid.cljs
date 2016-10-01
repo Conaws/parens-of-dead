@@ -122,7 +122,7 @@
        [:table
         [:thead [:tr [:th xtitle][:th]
                  (doall (for [m (:set/members @ysets)]
-                    [:th (:node/title m)]))
+                   ^{:key (str "th" m)} [:th (:node/title m)]))
                  [:th
 
                   [add-elem-form conn ytitle]
@@ -130,9 +130,9 @@
                   ]]]
         [:tbody
          (for [m (:set/members @xelems)]
-           [:tr [:th (:node/title m)][:th]
+          ^{:key (str m "table-title")} [:tr [:th (:node/title m)][:th]
             (doall (for [s (:set/members @ysets)]
-               (if (contains? (set (:set/members s)) m )
+               ^{:key (str s m)}(if (contains? (set (:set/members s)) m )
                  [:td.active
                   {:on-click
                    #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
@@ -165,11 +165,11 @@
       [:div.nest
        [:ol
         (for [m (:set/members @root)]
-          [:div
+         ^{:key (str m "list")} [:div
            [:label (:node/title m)]
            [:ol
             (for [m (:set/members m)]
-              [:li
+            ^{:key (str m "label")}  [:li
                [:label {:draggable true}
                 (:node/title m)]
                ])]])]
@@ -255,25 +255,25 @@
           [:tr [:th][:th] [:th.underline {:col-span "5"} ytitle] ]
           [:tr [:th.underline xtitle][:th]
            (doall (for [m (:set/members @ysets)]
-              [:th (:node/title m)]))
+              ^{:key (str "title" m)}[:th (:node/title m)]))
            [:th
             [add-elem-form conn ytitle ]
             ]]]
          [:tbody
           (doall (for [m (:set/members @xsets)]
-             [:tr [:th (:node/title m)][:th]
-              (for [s (:set/members @ysets)]
-                ;; (if (contains? (set (:set/members s)) m )
-                ;;   [:td.active
-                ;;    {:on-click
-                ;;     #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
-                ;;     }"Y"]
-                ;;   [:td
-                ;;    {:on-click
-                ;;     #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
-                ;;     }"N"]))])
-                [intersection-node conn m s]
-                )]))
+           ^{:key (str m "rows")}  [:tr [:th (:node/title m)][:th]
+                                    (doall (for [s (:set/members @ysets)]
+                                            ;; (if (contains? (set (:set/members s)) m )
+                                            ;;   [:td.active
+                                            ;;    {:on-click
+                                            ;;     #(d/transact! conn [[:db/retract (:db/id s) :set/members (:db/id m) ]])
+                                            ;;     }"Y"]
+                                            ;;   [:td
+                                            ;;    {:on-click
+                                            ;;     #(d/transact! conn [{:db/id (:db/id s) :set/members (:db/id m)}])
+                                            ;;     }"N"]))])
+                                            ^{:key (str m s "inters")}    [intersection-node conn m s]
+                                            ))]))
           [:tr [:td (if @newelem [x-input
                                   {:title ""
                                    :on-stop #(reset! newelem false)
@@ -334,7 +334,7 @@
           [:tr [:th][:th] [:th.underline {:col-span "5"} ytitle] ]
           [:tr [:th.underline xtitle][:th]
            (for [m (:set/members @ysets)]
-             [:th (:node/title m)])
+            ^{:key (str "folding" m)} [:th (:node/title m)])
            [:th
 
             (if @newst
@@ -349,8 +349,9 @@
             ]]]
          [:tbody
           (for [m (:set/members @xsets)]
-            [:tr [:th (:node/title m)][:th]
+            ^{:key (str "folding-header" m)}[:tr [:th (:node/title m)][:th]
              (for [s (:set/members @ysets)]
+               ^{:key (str "folding-header" m)}
                [interdrop conn m s]
                )])
           [:tr [:td (if @newelem [x-input
@@ -448,7 +449,7 @@
          [:div
           [:ol
            (for [m (:set/members @root)]
-             [simple-folding-sets conn (:node/title m) open])
+             ^{:key (str m "simple-folding-sets")}[simple-folding-sets conn (:node/title m) open])
 
            (if @hovered
              [:div.dropzone
@@ -516,7 +517,7 @@
     [:h1 "New"]
     [:div.box-body
      (for [s shows]
-       [show s])
+       ^{:key (str "shows " s)}[show s])
      ]
     [:div.box-footer>a "More New Episodes"]]
 
@@ -586,7 +587,6 @@
 
 
 (defn title-parse [matcher title]
-
   (if (and (string? title) (str/starts-with? title matcher))
     (let [newtitle (str/replace-first title matcher "")]
       (str/trim newtitle))   )  )
@@ -597,11 +597,10 @@
          :node/title t})
       (when-let [t (title-parse "+" title)]
         {:input/type :intersection
-         :node/title t})
+         :node/type :intersection
+         :set/parents (vector t)})
       {:input/type :child
        :node/title title}))
-
-      ) )
 
 
 ;; this works fine IF, I can have deeply nested lookup,
@@ -609,12 +608,41 @@
 ;; I have a feeling it won't work the way I want it to though
 
 
-(defn connect-node [node children]
+;;; realized why I can't pass the path down in intersection nodes-- because this is a recursive fn
+;;; thus it moves from bottom up, not top down, the bottom ones don't even have
+;;; anything they COULD add.. 
+
+(defn connect-node [{title :node/title
+                     type :input/type
+                     parents :set/parents
+                     :as node} children]
   (let [{c :child p :parent i :intersection} (group-by :input/type children)]
     (cond-> node
       c (assoc :set/members c)
       p (assoc :set/_members p)
-      i (assoc :set/intersections i))))
+      i (assoc :set/intersections
+               (condp = type
+                 :child (mapv #(update % :set/parents
+                                       (fn [x] (conj x title))) i)
+                 :parent (mapv #(update % :set/parents
+                                        (fn [x] (conj x title))) i)
+                 :intersection (mapv #(update % :set/parents (fn [x] (concat parents x))) i))
+               ))))
+
+
+
+(def sample-intersection
+  [{:db/id -1
+    :node/title "Books"}
+   {:db/id -2
+    :node/type :intersection
+    :set/parents ["Books" {:node/title "Philosophy"}]
+    :set/members [{:node/title "Principia Mathematica"}]}
+   ]
+
+  )
+
+
 
 
 
@@ -623,7 +651,7 @@
 (def depthvec->tree
   (partial transform-depthvec create-node-map connect-node conj))
 
-(defonce teststring (r/atom {:text "A\n\tB\n\t\tC"}))
+(defonce teststring (r/atom {:text "A"}))
 
 
 
@@ -649,6 +677,11 @@
     ))
 
 
+(defn string-between [between s]
+  (apply str (rest (interleave (repeat between) s))))
+
+
+
 
 (defn emit [e]
   (do (js/console.log "handle event" (pr-str e))
@@ -665,8 +698,35 @@
     :else))
 
 
-(defn node-test [conn {title :node/title members :set/members
-                       parents :set/_members :as node}]
+(declare node-test)
+(defn inter [conn {parents :set/parents
+                   children :set/members
+                   i :set/intersections
+                   :as node}]
+  [:div
+   [:button.btn.btn-intersection
+        (string-between " + " parents)]
+   [:div.tree-children
+    (for [c children]
+      ^{:key (str c node)}
+      [node-test conn c])
+    ]
+   (when i
+     [:div.tree-children
+      (for [p i]
+        ^{:key (str i p)}
+
+        [inter conn p])
+
+      ])]
+  )
+
+
+(defn node-test [conn {title :node/title
+                       members :set/members
+                       parents :set/_members
+                       inters :set/intersections
+                       :as node}]
   (let [existing @(posh/q conn '[:find ?e
                                   :in $ ?title
                                   :where
@@ -680,12 +740,20 @@
         [:b title])]
      [:div.tree-children
       (for [m members]
-        [node-test conn m])
+       ^{:key (str title m)} [node-test conn m])
       (when parents
-        [:div
-         [:h4 "parents"]
+        [:div.tree-children.tree-children-parents
          (for [p parents]
-           [node-test conn p])])]
+           ^{:key (str title p)}[node-test conn p])])
+
+      (when inters
+        [:div.tree-children
+         (for [p inters]
+           ^{:key (str title p)}
+           [inter conn p])
+
+         ])
+      ]
      ]))
 
 
@@ -695,7 +763,7 @@
 (defn tree-view [conn db]
   (let [tree @(tracktest db)]
     [:div (for [node tree]
-                [node-test conn node])]))
+                ^{:key (str "treeview" node)}[node-test conn node])]))
 
 
 (defn tree-input [conn db]
@@ -840,3 +908,33 @@
       (is (= tx-id (+ d/tx0 2)))
       (is (= (into {} (d/entity @conn tx-id))
              {:prop3 "prop3"})))))
+
+
+
+
+
+(deftest test-resolve-eid-refs
+  (let [conn (d/create-conn {:friend {:db/valueType :db.type/ref
+                                      :db/cardinality :db.cardinality/many}})
+        tx   (d/transact! conn [{:name "Sergey"
+                                 :friend [-1 -2]}
+                                [:db/add -1 :name "Ivan"]
+                                [:db/add -2 :name "Petr"]
+                                [:db/add -4 :name "Boris"]
+                                [:db/add -4 :friend -3]
+                                [:db/add -3 :name "Oleg"]
+                                [:db/add -3 :friend -4]])
+        q '[:find ?fn
+            :in $ ?n
+            :where [?e :name ?n]
+                   [?e :friend ?fe]
+                   [?fe :name ?fn]]]
+    (is (= (:tempids tx) { -1 2, -2 3, -4 4, -3 5, :db/current-tx (+ d/tx0 1) }))
+    (is (= (d/q q @conn "Sergey") #{["Ivan"] ["Petr"]}))
+    (is (= (d/q q @conn "Boris") #{["Oleg"]}))
+    (is (= (d/q q @conn "Oleg") #{["Boris"]}))))
+
+
+
+
+
