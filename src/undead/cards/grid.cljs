@@ -586,32 +586,35 @@
 
 
 (defn title-parse [matcher title]
-  (if (str/starts-with? title matcher)
+
+  (if (and (string? title) (str/starts-with? title matcher))
     (let [newtitle (str/replace-first title matcher "")]
       (str/trim newtitle))   )  )
 
-(defn newnode [title]
-  (or (if-let [t (title-parse "<" title)]
+(defn create-node-map [title]
+  (or (when-let [t (title-parse "<" title)]
         {:input/type :parent
          :node/title t})
-      (if-let [t (title-parse "+" title)]
+      (when-let [t (title-parse "+" title)]
         {:input/type :intersection
          :node/title t})
+      {:input/type :child
+       :node/title title}))
 
       ) )
 
 
-(defn create-node-map
-  [title]
-  (or (newnode title) 
-      {:input/type :child
-       :node/title title}))
+;; this works fine IF, I can have deeply nested lookup,
+;; and IF, it isn't too hard to remove the items
+;; I have a feeling it won't work the way I want it to though
+
 
 (defn connect-node [node children]
-  (let [{c :child p :parent} (group-by :input/type children)]
-    (assoc node
-           :set/members (or c [])
-           :set/_members (or p []))))
+  (let [{c :child p :parent i :intersection} (group-by :input/type children)]
+    (cond-> node
+      c (assoc :set/members c)
+      p (assoc :set/_members p)
+      i (assoc :set/intersections i))))
 
 
 
