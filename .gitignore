@@ -1,6 +1,8 @@
 /figwheel_server.log
-/node_modules/cytoscape/.eslintrc.json
-/resources/public/js/app/.figwheel-compile-stamp
+/node_modules/*
+/target/*
+
+/resources/public/js/*
 /resources/public/js/app/cljs/core.cljs
 /resources/public/js/app/cljs/core.js
 /resources/.DS_Store
@@ -8,3 +10,6 @@
 /resources/public/js/app/goog/events/eventtarget.js
 /node_modules/cytoscape/.npmignore
 /node_modules/cytoscape/.travis.yml
+/.DS_Store
+/.nrepl-port
+/resources/public/.DS_Store
