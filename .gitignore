@@ -7,3 +7,4 @@
 /node_modules/cytoscape/.jscsrc
 /resources/public/js/app/goog/events/eventtarget.js
 /node_modules/cytoscape/.npmignore
+/node_modules/cytoscape/.travis.yml
