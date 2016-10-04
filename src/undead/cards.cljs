@@ -4,6 +4,7 @@
    [undead.cards.zip]
    [undead.cards.drag]
    [undead.cards.setdrag]
+   [undead.cards.search]
    [undead.cards.logic]
    [undead.cards.labels]
    [undead.cards.grid]
