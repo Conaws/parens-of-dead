@@ -17,7 +17,8 @@
                  [datascript "0.15.4"]
                  [re-frame "0.8.0"]
                  [re-com "0.8.3"]
-                 [cljsjs/d3 "4.2.2-0"]]
+                 [cljsjs/d3 "4.2.2-0"]
+                 [enlive "1.1.6"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"

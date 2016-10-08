@@ -5,7 +5,8 @@
             [posh.core :as posh :refer [posh!]]
             [re-com.core :as rc :refer [v-box box h-box]]
             [reagent.core :as r]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [devcards.core :as dc])
   (:require-macros
    [cljs.test  :refer [testing is are]]
    [com.rpl.specter.macros :refer [select]]
@@ -64,6 +65,46 @@
   )
 
 
+(def intersection-rule
+  '[[(intersection ?e ?i)
+     [?e :set/intersections ?i]]
+    [(intersection ?e ?i)
+     [?i :intersection/of ?e]]
+    ])
+
+
+(def rule-child-intersections
+  (vec (concat '[[(child ?e ?e2)
+                  [?e :intersection/of _]
+                  [?i :set/members ?e2]
+                  ]]
+                 child-rule
+                 intersection-rule
+                 ))
+  )
+
+
+(def child2
+  '[[(child ?e ?e2)
+     [?e :set/down ?e2]]
+    [(child ?e ?e2)
+     [?e2 :set/up ?e]]
+    [(child ?e ?e2)
+     [?e :set/down ?i]
+     (child ?i ?e2)]
+    [(child ?e ?e2)
+     [?i :set/up ?e]
+     (child ?i ?e2)]])
+
+
+;;these kinds of circular dependencies are not allowed
+;; (def child3 '[[(child ?e ?e2)
+;;               [?e :set/down ?e2]]
+;;              [(child ?e ?e2)
+;;               [?e2 :set/up ?e]]
+;;              [(child ?e ?e2)
+;;               (child ?e ?i)
+;;               (child ?i ?e2)]])
 
 
 ;; strange bug where getting too many results when not putting inside vector
@@ -75,9 +116,21 @@
 (deftest queries
   (let [q '[:find ?c
             :in $ % ?p
-            :where (child ?p ?c)]]
+            :where (child ?p ?c)]
+
+        q1 '[:find ?i
+             :in $ % ?p
+             :where (intersection ?p ?i)]]
     (testing "qs"
-      (is (= (d/q q test-db child-rule 9) #{[10]})))))
+      (is (= (d/q q test-db child-rule 9) #{[10]}))
+      (is (= (d/q q1 test-db intersection-rule 4) #{[7]}))
+      (is (= " " rule-child-intersections))
+      (is (= (d/q q test-db child2 9) #{[10][7][11][8]}))
+      )))
+
+
+(def query-atom (r/atom []))
+
 
 
 
@@ -143,9 +196,74 @@
 
 
 
+(def parent-child-db (d/db-with (d/empty-db {:title {:db/unique :db.unique/identity}
+                                     :down {:db/valueType :db.type/ref
+                                                   :db/cardinality :db.cardinality/many}
+                                     :up  {:db/valueType :db.type/ref
+                                                         :db/cardinality :db.cardinality/many}
+                                     :set/intersections  {:db/valueType :db.type/ref
+                                                  :db/cardinality :db.cardinality/many}
+                                     :intersection/of  {:db/valueType :db.type/ref
+                                                   :db/cardinality :db.cardinality/many}})
+                        [{:title "October"
+                          :down [{:title "Oct 1"
+                                  :down [{:title "A"}
+                                         {:title "B"}]}
+                                 {:title "Oct 2"
+                                  :down [{:title "C"}
+                                         {:title "D"}]}
+                                 {:title "Oct 3"
+                                  :down [{:title "E"}
+                                         {:title "F"}]}
+                                 {:title "Oct 4"
+                                  :down [{:title "G"}
+                                         {:title "H"}]}
+                                 {:title "Oct 5"
+                                  :down [{:title "I"}
+                                         {:title "J"}]}]}
+                         {:title "Research"
+                          :down [[:title "A"]
+                                 [:title "C"]
+                                 [:title "E"]]}
+                         {:title "Development"
+                          :down [[:title "B"]
+                                 [:title "D"]
+                                 [:title "F"]]}
+                         {:title "Datascript"
+                          :down [[:title "G"]
+                                 [:title "A"]
+                                 [:title "C"]]}
+                         ]))
+
+(defcard-rg testdb2
+  [:div (pr-str parent-child-db)])
 
 
 
+(def simple-child
+  '[[(child ?p ?c)
+     [?p :down ?c]]])
+
+(deftest queries2
+  (let [
+        q '[:find ?p-names
+            :in $ %
+            :where
+            [?parents :title ?p-names]
+            (child ?parents ?c)]
+
+        q1 '[:find ?c-title
+             :in $ % $titles
+             :where
+             [$titles ?parent-titles]
+             [?p :title ?parent-titles]
+             (child ?p ?c)
+             [?c :title ?c-title]
+             ]]
+    (testing "qs"
+      (is (= (d/q q parent-child-db simple-child) #{[10]}))
+      (is (= (d/q q1 parent-child-db simple-child [["Oct 1"]]) #{["A"]["B"]}))
+      )))
 
 
 

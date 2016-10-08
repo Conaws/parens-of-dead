@@ -33,3 +33,146 @@ Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
                                  [:db/add -1 :name "Y"]
                                  [:db/add -1 :created-at :db/current-tx]])
  Link: file:~/src/side/parens-of-the-dead/src/undead/cards/grid.cljs::(d/transact!%20conn%20%5B{:name%20"X"%0A%20:created-at%20:db/current-tx}%0A%20{:db/id%20:db/current-tx%0A%20:prop1%20"prop1"}%0A%20%5B:db/add%20:db/current-tx%20:prop2%20"prop2"%5D%0A%20%5B:db/add%20-1%20:name%20"Y"%5D%0A%20%5B:db/add%20-1%20:created-at%20:db/current-tx%5D%5D)
+** TODO  got queries      <2016-10-08 Sat 06:50>
+ (deftest queries2
+   (let [
+         q '[:find ?p-names
+             :in $ %
+             :where
+             [?parents :title ?p-names]
+             (child ?parents ?c)]
+ 
+         q1 '[:find ?c-title
+              :in $ % $titles
+              :where
+              [$titles ?parent-titles]
+              [?p :title ?parent-titles]
+              (child ?p ?c)
+              [?c :title ?c-title]
+              ]]
+     (testing "qs"
+       (is (= (d/q q parent-child-db simple-child) #{[10]}))
+       (is (= (d/q q1 parent-child-db simple-child [["Oct 1"]]) #{["A"]["B"]}))
+       )))
+ Link: file:~/src/side/parens-of-the-dead/src/undead/cards/search.cljs::(deftest%20queries2%0A%20(let%20%5B%0A%20q%20'%5B:find%20?p-names%0A%20:in%20$%20%25%0A%20:where%0A%20%5B?parents%20:title%20?p-names%5D%0A%20(child%20?parents%20?c)%5D%0A%0A%20q1%20'%5B:find%20?c-title%0A%20:in%20$%20%25%20$titles%0A%20:where%0A%20%5B$titles%20?parent-titles%5D%0A%20%5B?p%20:title%20?parent-titles%5D%0A%20(child%20?p%20?c)%0A%20%5B?c%20:title%20?c-title%5D%0A%20%5D%5D%0A%20(testing%20"qs"%0A%20(is%20(=%20(d/q%20q%20parent-child-db%20simple-child)%20#{%5B10%5D}))%0A%20(is%20(=%20(d/q%20q1%20parent-child-db%20simple-child%20%5B%5B"Oct%201"%5D%5D)%20#{%5B"A"%5D%5B"B"%5D}))%0A%20)))
+* log
+** October 5, 2016
+*** 00:12:18
+break
+
+00:15:47
+
+
+01:16:38
+*** looking for clj web scraping
+
+01:16:54
+*** try scraping mit with enlive
+
+https://github.com/swannodette/enlive-tutorial
+*** videos
+
+04:44:22
+
+
+*** double slit experiment
+https://www.youtube.com/watch?v=A9tKncAdlHQ
+
+
+https://www.youtube.com/watch?v=J_ozTpZUvs0
+
+*** DONE https://www.youtube.com/watch?v=J_ozTpZUvs0
+CLOSED: [2016-10-05 Wed 05:16]
+
+
+** October 8, 2016 
+
+03:40:32
+
+*** trying new more ergonomic setup with cheapo keyboard\
+
+**** Not having ctrl mapped to capslock is a pain
+
+**** so is the slow responsiveness of the keys
+who need to be pushed wayy too far down
+
+**** was able to get it remapped successfully 
+
+just had to select the usb keyboard instead of the 
+mac keyboard -- makes a big difference putting cmd and
+ctrl in the right place, was really bugging me out before..
+
+sadly don't have a function key, but its cool
+
+
+*** change fn keys to be useful 
+:LOGBOOK:
+CLOCK: [2016-10-08 Sat 03:44]--[2016-10-08 Sat 03:48] =>  0:04
+:END:
+
+*** break 
+:LOGBOOK:
+CLOCK: [2016-10-08 Sat 03:48]--[2016-10-08 Sat 05:41] =>  1:53
+:END:
+
+included meditation, shower, stretching and reading less wrong
+
+*** tasks
+:LOGBOOK:
+CLOCK: [2016-10-08 Sat 05:41]--[2016-10-08 Sat 06:12] =>  0:31
+:END:
+
+**** Figure out what is wrong with my leg
+
+**** create sample data for  testing this parent/child search
+
+**** figure out how I want to represent dates in the system
+
+***** Generate a list of dates for this week
+
+***** generate a list of days in the month
+
+***** learn all the helper functions -- or the commonly written ones for working with time in cljs
+
+**** create the parent/child search boxes
+
+**** create a view for inputing in text to a node -- full stories
+
+****  get more practice in artist mode to draw quick diagrams in my todos
+
+**** download the anki deck for spaced repetitoin stuff
+
+**** checkout the mobile app for zotero
+
+***** would require
+
+****** reseting my zotero password
+
+**** create an ADD tags, interface at the individual node level --
+
+**** create an add parents, and/or, add children interface at the individual node level
+
+|----------------------     -
+-------------
+--------------
+              +----+
++----+        |    |
+|    +--------+----++
+|    +        |    |
+|   k+lllllll llllll
+|    |     |  |    |
+|    +     |  +----+
+|    |     |
+|    |
+|    |
+|    +-----+
+
+
+
+*
+
+***  simple parents and node
+:LOGBOOK:
+CLOCK: [2016-10-08 Sat 06:12]
+:END:
+
