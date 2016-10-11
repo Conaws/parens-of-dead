@@ -425,3 +425,48 @@ li.placeholder:before {
 }
 
 
+
+ul.todo-list {background-color: blue;
+              list-style: none;}
+
+
+.todo {color: white;
+       padding: 20px;}
+
+.todo-enter {opacity: 0.01;}
+.todo-enter.todo-enter-active {opacity: 1;
+                               transition: opacity 500ms ease-in;}
+
+.todo-leave {opacity: 1;}
+.todo-leave.todo-leave-active {opacity: 0.01;
+                               transition: opacity 500ms ease-in;}
+
+
+
+
+.slider {width: 100%;
+         height: 50px;
+         padding: 10px 0px;
+         border: 2px solid white;
+         color: white;}
+
+.slide-enter {
+    transform: translate(100%);
+    height: 0px;
+}
+.slide-enter.slide-enter-active {
+  transform: translate(0%);
+  height: 100px;
+  transition: transform 1000ms ease-in-out,
+  height 1000ms ease-in-out;
+
+}
+.slide-leave {
+  transform: translate(0%);
+}
+.slide-leave.slide-leave-active {
+    transform: translate(-110%);
+    opacity: 0.01;
+    transition: transform 1000ms ease-in-out,
+    opacity 2000ms ease-out;
+}

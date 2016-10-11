@@ -1,5 +1,6 @@
 (ns undead.cards.animate
   (:require [re-frame.core :refer [dispatch reg-event-db reg-sub subscribe]]
+            [reanimated.core :as anim]
             [reagent.core :as r])
   (:require-macros [devcards.core :refer [defcard-rg]]))
 
@@ -109,3 +110,61 @@
   [helm-panel])
 
 
+(def samples (r/atom {:a 1 :b 2 :c 3 :d 4}))
+
+
+(defn anim1 [samples]
+  [:div
+   [:button
+    {:on-click #(swap! samples assoc (rand-int 10000) (str (rand-int 10000) "Node"))}]
+   [anim/css-transition-group
+    {:transition-name "todo"
+     :transition-enter-timeout 500
+     :transition-leave-timeout 500
+     :component "ul"
+     :class "todo-list"}
+    (doall
+     (for [[idx item] @samples]
+       [:li.todo
+        {:key idx}
+        item
+        [:button.btn
+         {:style {:float "right"}
+          :on-click #(swap! samples dissoc idx)}
+         "X"]]
+       ))]])
+
+
+(defcard-rg anim-c
+  [anim1 samples]
+  samples
+  {:inspect-data true
+   :history true})
+
+(defn anim2 [samples]
+  [:div
+   [:button
+    {:on-click #(swap! samples assoc (rand-int 10000) (str (rand-int 10000) "Node"))}]
+   [anim/css-transition-group
+    {:transition-name "slide"
+     :transition-enter-timeout 1000
+     :transition-leave-timeout 1000
+     :component "ul"
+     :class "todo-list"}
+    (doall
+     (for [[idx item] (reverse @samples)]
+       [:li.slider
+        {:key idx}
+        item
+        [:button.btn
+         {:style {:float "right"}
+          :on-click #(swap! samples dissoc idx)}
+         "X"]]
+       ))]])
+
+
+(defcard-rg anim-slide-c
+  [anim2 samples]
+  samples
+  {:inspect-data true
+   :history true})
