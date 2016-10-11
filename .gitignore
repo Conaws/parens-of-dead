@@ -12,3 +12,4 @@
 /.DS_Store
 /.nrepl-port
 /resources/public/.DS_Store
+/src/undead/cards/demo.cljs

@@ -11,7 +11,7 @@
    [cljs.test  :refer [testing is are]]
    [com.rpl.specter.macros :refer [select]]
    [devcards.core :refer [defcard-rg deftest]]
-   [undead.subs :refer [deftrack]]))
+   [undead.subs :refer [deftrack multi-filter]]))
 
 
 (def test-db (d/db-with (d/empty-db {:node/title {:db/unique :db.unique/identity}
@@ -259,15 +259,76 @@
              [?p :title ?parent-titles]
              (child ?p ?c)
              [?c :title ?c-title]
+             ]
+        q2 '[:find ?c-title
+             :in $ % [?p1 ?p2]
+             :where
+             [?p :title ?p1]
+             (child ?p ?c)
+             [?c :title ?c-title]
+             [?p22 :title ?p2]
+             (child ?p22 ?c)
              ]]
     (testing "qs"
       (is (= (d/q q parent-child-db simple-child) #{[10]}))
       (is (= (d/q q1 parent-child-db simple-child [["Oct 1"]]) #{["A"]["B"]}))
+      (is (= (d/q q2 parent-child-db simple-child ["Oct 1" "Research"]) #{["A"]}))
       )))
 
 
 
 
+
+
+(deftest queries3
+  (let [
+        q '[:find ?p-names
+            :in $ %
+            :where
+            [?parents :title ?p-names]
+            (child ?parents ?c)]
+
+        q1 '[:find ?c-title
+             :in $ % $titles
+             :where
+             [$titles ?parent-titles]
+             [?p :title ?parent-titles]
+             (child ?p ?c)
+             [?c :title ?c-title]
+             ]
+        q2 '[:find ?c-title
+             :in $ % [?p1 ?p2]
+             :where
+             [?p :title ?p1]
+             (child ?p ?c)
+             [?c :title ?c-title]
+             [?p22 :title ?p2]
+             (child ?p22 ?c)
+             ]]
+    (testing "qs"
+      (is (= (d/q
+              {:find '[?parents]
+               :in '[$ %]
+               :where '[[?pids :title ?parents]
+                        (child ?pids ?cids)]}
+              parent-child-db simple-child)
+             #{["Oct 1"] ["Research"] ["Development"] ["Datascript"] ["October"]
+               ["Oct 3"] ["Oct 4"] ["Oct 2"] ["Oct 5"]}))
+      
+      (is (= (d/q 
+              {:find '[(pull ?cid [*] )]
+                   :in '[$ % [?p]]
+                   :where '[[?p1 :title ?p]
+                            (child ?p1 ?cid)
+                            [?cid :title ?c]]}
+                  parent-child-db simple-child ["Oct 1"])
+             #{["A"]["B"]}))
+      #_(is (=  (d/q  {:find '[(pull ?cid [*] )]
+                     :in '[$ % [?pA ?pB]]
+                     :where (multi-filter ["A" "B"])}
+                    parent-child-db simple-child) #{}))
+      (is (= (d/q q2 parent-child-db simple-child ["Oct 1" "Research"]) #{["A"]}))
+      )))
 
 
 ;; (def gist-db (d/db-with (d/empty-db {:title {:db/unique :db.unique/identity}
@@ -288,3 +349,36 @@
 ;;     [(child ?e ?e2)
 ;;      [?e2 :set/up ?e]]]
 ;;   )
+
+
+
+
+
+;; (defn retrieve-entity [conn domain-key constraint-map]
+
+;;   (let [constraints-w-ns constraint-map
+
+
+;;         ;; We expect a structure like... ((:posts/title t) (:posts/content-type c/t))... at the end, we need to double-quote the name
+;;         names-fn #(-> % first name (string/split #"/") first (->> (str "?")) symbol #_(->> (list (symbol 'quote))))
+;;         param-names (map names-fn
+;;                            (seq constraints-w-ns))
+;;         param-values (into [] (map last (seq constraints-w-ns)))
+
+
+;;         ;; Should provide constraints that look like: [[?e :posts/title ?title] [?e :posts/content-type ?content-type]]
+;;         constraints-final (->> constraints-w-ns
+;;                                seq
+;;                                (map (fn [inp]
+;;                                       ['?e (first inp) (names-fn inp)] ))
+;;                                (into []))
+
+;;         ;;
+;;         expression-final {:find ['?e]
+;;                           :in ['$ (into [] param-names)]
+;;                           :where constraints-final}
+
+;;         ;;
+;;         the-db (datomic.api/db conn)]
+
+;; (d/q expression-final the-db param-values) ))

@@ -176,3 +176,272 @@ CLOCK: [2016-10-08 Sat 05:41]--[2016-10-08 Sat 06:12] =>  0:31
 CLOCK: [2016-10-08 Sat 06:12]
 :END:
 
+** October 11, 2016
+
+*** Color Scheme found
+
+http://www.colorzilla.com/colors/050508+25272E+1D2028+2A2D34+646871+000000+CCCCCC+E3E3E3+F7F7F7+FFFFFF?source-url=burakcan.github.io%252FKangaroo%252F
+
+color palette for http://burakcan.github.io/Kangaroo/
+
+#646871
+
+main aside color
+
+#2A2D34
+
+*** Todays todos
+
+**** What do I want to achieve today
+
+***** A very simple search box
+
+****** Search and filter
+
+****** Show all the parents of the currently visible nodes
+
+****** github icons
+
+
+Github Octicons icons by Github https://octicons.github.com/
+
+****** log
+
+08:39:04
+
+go to gym now
+
+
+15:20:38
+
+****** Joy of Clojure
+
+******* macros
+
+******* regex
+“Regular expressions accept option flags, shown in table 4.1, that can make a pattern case-insensitive or enable multiline mode. Clojure’s regex literals starting with (?<flag>) set the mode for the rest of the pattern. For example, the pattern #"(?i)yo" matches the strings “yo”, “yO”, “Yo”, and “YO”.
+
+Table 4.1. Flags that can be used in Clojure regular-expression patterns, along with their long name and a description of what they do. See Java’s documentation for the java.util.regex.Pattern class for more details.
+Flag
+
+Flag name
+
+Description
+
+d	UNIX_LINES	., ^, and $ match only the Unix line terminator '\n'.
+i	CASE_INSENSITIVE	ASCII characters are matched without regard to uppercase or lowercase.
+x	COMMENTS	Whitespace and comments in the pattern are ignored.
+m	MULTILINE	^ and $ match near line terminators instead of only at the beginning or end of the entire input string.
+s	DOTALL	. matches any character including the line terminator.
+u	UNICODE_CASE	Causes the i flag to use Unicode case insensitivity instead of ASCII.
+”
+
+Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
+
+******** capture groups
+“A capturing group (subsegments that are accessible via the returned match object) in the regex causes each returned item to be a vector:
+
+(re-seq #"\w*(\w)" "one-two/three")
+;=> (["one" "e"] ["two" "o"] ["three" "e"])”
+
+Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
+
+******* vectors
+
+******** into
+
+“If you already have a vector but want to pour several values into it, then into is your friend:
+
+(let [my-vector [:a :b :c]]
+  (into my-vector (range 10)))
+;=> [:a :b :c 0 1 2 3 4 5 6 7 8 9]”
+
+Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
+
+******** getting value in
+
+(def a-to-j (vec (map char(range 65 75))))
+
+All three of these do the same work, and each returns \E:
+
+(nth a-to-j 4)
+;;=> \E
+
+(get a-to-j 4)
+;;=> \E
+
+(a-to-j 4)
+;;=> \E”
+
+Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
+
+******** rseq
+
+“(seq a-to-j)
+;=> (\A \B \C \D \E \F \G \H \I \J)
+
+(rseq a-to-j)
+;=> (\J \I \H \G \F \E \D \C \B \A)”
+
+
+******** replace
+
+“(replace {2 :a, 4 :b} [1 2 3 2 3 4])
+;=> [1 :a 3 :a 3 :b]”
+
+******** update-in, assoc-in, get-in
+
+“(def matrix
+     [[1 2 3]
+
+      [4 5 6]
+      [7 8 9]])”
+
+
+(update-in matrix [1 2] * 100)
+;=> [[1 2 3] [4 5 600] [7 8 9]]
+
+******** neighbors
+
+(def neighbors
+([size yx] (neighbors [[-1 0] [1 0] [0 -1] [0 1]]
+size
+yx))
+
+([deltas size yx]
+(filter (fn [new-yx]
+(every? #(< -1 % size) new-yx))
+(map #(vec (map + yx %)) deltas))))
+
+“The deltas local describes that a neighbor can be one spot away, but only along the x or y axis (not diagonally). The function first walks through deltas and builds a vector of each added to the yx point provided. This operation of course generates illegal point coordinates, so those are removed using filter, which checks to ensure that the indices lie between -1 and the provided size.”
+
+
+“(neighbors 3 [1 1])
+
+;;=> ((0 1) (2 1) (1 0) (1 2))
+”
+
+
+
+“(map #(get-in matrix %) (neighbors 3 [0 0]))
+”
+
+******** pop and peek
+
+“The conj function adds elements to, and pop removes elements from, the right side of the stack. Because vectors are immutable, pop returns a new vector with the rightmost item dropped—this is different from many mutable stack APIs, which generally return the dropped item. Consequently, peek becomes more important as the primary way to get an item from the top of the stack:
+
+(def my-stack [1 2 3])
+(peek my-stack)
+
+;=> 3
+(pop my-stack)
+
+;=> [1 2]
+(conj my-stack 4)
+;=> [1 2 3 4]
+
+(+ (peek my-stack) (peek (pop my-stack)))
+;=> 5”
+
+“Any object that implements clojure.lang.IPersistentStack[7] can use the functions conj, pop, and peek. In addition to vectors, Clojure lists also implement this interface, but the functions operate on the left side of lists instead of the right side as with vectors. When operating on either via the stack discipline, it’s best to ignore the ordering, because it tends to add confusion.”
+
+Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
+
+******** subvec
+
+“(subvec a-to-j 3 6)
+;=> [\D \E \F]”
+
+******** vecs and maps 
+
+“(doseq [[dimension amount] {:width 10, :height 20, :depth 15}]
+  (println (str (name dimension) ":") amount "inches"))
+; width: 10 inches
+; height: 20 inches
+; depth: 15 inches
+;=> nil”
+
+Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
+
+******** finding element in a sequence
+
+“(some #{:b} [:a 1 :b 2])
+;=> :b
+
+(some #{1 :b} [:a 1 :b 2])
+;=> 1”
+
+******* sets
+
+******** sorted sets
+
+“
+(sorted-set :b 2 :c :a 3 1)
+; java.lang.ClassCastException: clojure.lang.Keyword cannot be cast to
+     java.lang.Number”
+
+****** find position of element in a sequence
+
+******* requirements
+
+“Work on any collection type, returning indices corresponding to some value
+Return a numerical index for sequential collections or associated key for maps and sets”
+
+Otherwise return nil”
+
+******* step 1 -- generate index
+
+“(defn index [coll]
+  (cond
+    (map? coll) (seq coll)
+    (set? coll) (map vector coll coll)
+    :else (map vector (iterate inc 0) coll)))”
+
+******* pos
+
+“(defn pos [e coll]
+  (for [[i v] (index coll) :when (= e v)] i))”
+
+******** slight improvement so can pass predicate fn
+
+“(pos #{3 4} {:a 1 :b 2 :c 3 :d 4})
+;=> (:c :d)
+
+(pos even? [2 3 6 7])
+;=> (0 2)
+We can modify pos only slightly to achieve the ideal level of flexibility.
+
+Listing 5.3. Final version of pos
+(defn pos [pred coll]
+ (for [[i v] (index coll) :when (pred v)] i))”
+
+* log 17:09:17
+
+** css transition group in reagent
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
