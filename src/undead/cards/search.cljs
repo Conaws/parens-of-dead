@@ -11,7 +11,7 @@
    [cljs.test  :refer [testing is are]]
    [com.rpl.specter.macros :refer [select]]
    [devcards.core :refer [defcard-rg deftest]]
-   [undead.subs :refer [deftrack multi-filter]]))
+   [undead.subs :refer [deftrack multi-filter mtest]]))
 
 
 (def test-db (d/db-with (d/empty-db {:node/title {:db/unique :db.unique/identity}
@@ -305,7 +305,7 @@
              [?p22 :title ?p2]
              (child ?p22 ?c)
              ]]
-    (testing "qs"
+    (testing "q"
       (is (= (d/q
               {:find '[?parents]
                :in '[$ %]
@@ -323,10 +323,8 @@
                             [?cid :title ?c]]}
                   parent-child-db simple-child ["Oct 1"])
              #{["A"]["B"]}))
-      #_(is (=  (d/q  {:find '[(pull ?cid [*] )]
-                     :in '[$ % [?pA ?pB]]
-                     :where (multi-filter ["A" "B"])}
-                    parent-child-db simple-child) #{}))
+      (is (=  (multi-filter gotest ["A" "B"]) #{"A"}))
+      (is (=  (mtest gotest ["A" "B"]) #{"A"}))
       (is (= (d/q q2 parent-child-db simple-child ["Oct 1" "Research"]) #{["A"]}))
       )))
 

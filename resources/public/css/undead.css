@@ -433,13 +433,16 @@ ul.todo-list {background-color: blue;
 .todo {color: white;
        padding: 20px;}
 
-.todo-enter {opacity: 0.01;}
+.todo-enter {opacity: 0.01;
+             padding: auto 0px;
+         }
 .todo-enter.todo-enter-active {opacity: 1;
-                               transition: opacity 500ms ease-in;}
+                               padding: auto 20px;
+                               transition: all 700ms ease-in;}
 
 .todo-leave {opacity: 1;}
 .todo-leave.todo-leave-active {opacity: 0.01;
-                               transition: opacity 500ms ease-in;}
+                               transition: opacity 300ms ease-in;}
 
 
 

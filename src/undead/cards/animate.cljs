@@ -119,8 +119,8 @@
     {:on-click #(swap! samples assoc (rand-int 10000) (str (rand-int 10000) "Node"))}]
    [anim/css-transition-group
     {:transition-name "todo"
-     :transition-enter-timeout 500
-     :transition-leave-timeout 500
+     :transition-enter-timeout 700
+     :transition-leave-timeout 300
      :component "ul"
      :class "todo-list"}
     (doall
