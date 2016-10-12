@@ -419,6 +419,20 @@ Listing 5.3. Final version of pos
 
 ** css transition group in reagent
 
+* October 12, 2016
+
+** log
+06:37:06
+break
+07:09:46
+
+try to load query dynamically
+successfully have a macro-generated multi-arity child query
+
+07:28:19
+
+
+
 
 
     

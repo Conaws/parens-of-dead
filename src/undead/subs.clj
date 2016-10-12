@@ -35,7 +35,19 @@
     :name (str '~name)
     :content [~@arg-vec]})
 
-
+(defmacro mquery [f arg-vec]
+  `{:find ~f
+    :in '[~'$ ~'% ~(vec (for [a arg-vec]
+                      (symbol (str '? a))))]
+    :where '~(vec (apply concat (for [a arg-vec
+                                      :let [x (symbol (str '? a))
+                                            xid (symbol (str x "id"))]]
+                              [[xid :title x]
+                               (list (symbol "child")
+                                     xid
+                                     (symbol "?cid"))]
+                              )))
+    })
 ;; (defmacro multi-filter [search-vec]
 ;;   `[~(for [n search-vec
 ;;           :let [x (symbol (str ?p n))]]
