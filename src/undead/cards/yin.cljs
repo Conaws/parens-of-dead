@@ -90,6 +90,13 @@
     [?x :set/down ?e]
     [?e :node/title ?title]])
 
+(def parent-q
+  '[:find ?title (count ?e)
+    :where
+    [?x :set/down ?e]
+    [?x :node/title ?title]])
+
+
 
 (defn Lview [keyfn items i-fn]
   [:ul
@@ -99,16 +106,47 @@
 (defn Li [[a b]]
   [:li (str a " "b)])
 
+(defn Li-parent [[a b]]
+  [:li (str a) [:sub b]])
+
+(defn Li-child [[a b]]
+  [:li (str a) [:sup b]])
+
+(defn c [conn]
+  (let [x (posh/q conn child-q)
+        y (posh/q conn parent-q)]
+    (fn [conn]
+      [:div.flex
+       [:div
+        [:h1 "Parents"]
+        [Lview first @y Li-parent]]
+       [:div
+        [:h1 "Children"]
+        [Lview first @x Li-child]]
+       [:div
+        [:button {:on-click #(d/transact! conn [{:node/title (str (rand 100))
+                                                 :set/_down [10]}])}
+         "Hey, what gives"]]])))
+
+
+(defcard-rg c-card
+  [c conn2])
 
 (defn b [conn]
-  (let [x (posh/q conn child-q)]
+  (let [x (posh/q conn child-q)
+        y (posh/q conn parent-q)]
     (fn [conn]
-      [:div 
-       [Lview first @x Li]
-
-       [:button {:on-click #(d/transact! conn [{:node/title (str (rand 100))
-                                                :set/_down [10]}])}
-        "Hey, what gives"]])))
+      [:div.flex
+       [:div
+        [:h1 "Parents"]
+        [Lview first @y Li-parent]]
+       [:div
+        [:h1 "Children"]
+        [Lview first @x Li-child]]
+       [:div
+        [:button {:on-click #(d/transact! conn [{:node/title (str (rand 100))
+                                                 :set/_down [10]}])}
+         "Hey, what gives"]]])))
 
 
 (defcard-rg bbb
