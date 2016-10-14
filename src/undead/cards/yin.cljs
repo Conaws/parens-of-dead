@@ -113,26 +113,78 @@
   [:li (str a) [:sup b]])
 
 
-(def child-q2
+
+
+
+(def child-q3
   '[:find ?title (count ?y)
-    :in $ [?parents ...]
+    :in $ ?parent
     :where
-    [?x :node/title ?parents]
+    [?x :node/title ?parent]
     [?x :set/down ?e]
     [?e :node/title ?title]
     [?y :set/down ?e]])
 
-(def parent-q2
+(def parent-q3
   '[:find ?title (count ?y)
-    :in $ [?children ...]
+    :in $ ?child
     :where
-    [?x :node/title ?children]
+    [?x :node/title ?child]
     [?e :set/down ?x]
     [?e :node/title ?title]
     [?e :set/down ?y]])
 
+(deftrack q-join [conn query argvec]
+  (apply set/intersection (for [a argvec]
+                            (set @(posh/q conn query a)))))
+
+(deftrack q-all [conn query argvec]
+  (for [a argvec]
+    (set @(posh/q conn query a))))
+
+
+(deftest q-join-test
+
+  (testing "q-join returns something"
+    (is (= #{["Vannevar Bush" 2]} @(q-join conn2 parent-q3 ["Memex" "As we may think"])))
+    (is (= #{["Vannevar Bush" 2]} @(q-join conn2 child-q3 ["Vannevar Bush" "As we may think"])))
+
+    ))
+
+
 
 ;;; this shows that adding parents increases the range -- rather than filtering further
+
+(defn e-view [conn]
+  (let [filter-parents ["Vannevar Bush" "Doug Engelbart"]
+        x (q-join conn child-q3 filter-parents )
+        ;; x (posh/q conn child-q2 )
+        filter-children ["Memex" "As we may think"]
+        y (q-join conn parent-q3 filter-children)]
+    (fn [conn]
+      [:div.flex
+       [:div
+        [:h1 "Parents"]
+        [:b (pr-str filter-children)]
+        [Lview first @y Li-parent]]
+       [:div
+        [:h1 "Children"]
+        [:b (pr-str filter-parents)]
+        [Lview first @x Li-child]]
+       [:div
+        [:button {:on-click #(d/transact! conn [{:node/title (str (rand 100))
+                                                 :set/_down [10]}])}
+         "Hey, what gives"]]])))
+
+(defcard-rg e-card
+  [e-view conn2])
+
+
+(declare child-q2 parent-q2)
+
+
+;; we confirm now that you can't use the single query and pass in a vector
+
 (defn d [conn]
   (let [filter-parents ["Vannevar Bush" "Doug Engelbart"]
         x (posh/q conn child-q2 filter-parents )
@@ -157,6 +209,27 @@
 
 (defcard-rg d-card
   [d conn2])
+
+
+(def child-q2
+  '[:find ?title (count ?y)
+    :in $ [?parents ...]
+    :where
+    [?x :node/title ?parents]
+    [?x :set/down ?e]
+    [?e :node/title ?title]
+    [?y :set/down ?e]])
+
+(def parent-q2
+  '[:find ?title (count ?y)
+    :in $ [?children ...]
+    :where
+    [?x :node/title ?children]
+    [?e :set/down ?x]
+    [?e :node/title ?title]
+    [?e :set/down ?y]])
+
+
 (defn c [conn]
   (let [filter-parents ["Vannevar Bush"]
         x (posh/q conn child-q2 filter-parents )
