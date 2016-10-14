@@ -112,16 +112,66 @@
 (defn Li-child [[a b]]
   [:li (str a) [:sup b]])
 
-(defn c [conn]
-  (let [x (posh/q conn child-q)
-        y (posh/q conn parent-q)]
+
+(def child-q2
+  '[:find ?title (count ?y)
+    :in $ [?parents ...]
+    :where
+    [?x :node/title ?parents]
+    [?x :set/down ?e]
+    [?e :node/title ?title]
+    [?y :set/down ?e]])
+
+(def parent-q2
+  '[:find ?title (count ?y)
+    :in $ [?children ...]
+    :where
+    [?x :node/title ?children]
+    [?e :set/down ?x]
+    [?e :node/title ?title]
+    [?e :set/down ?y]])
+
+
+;;; this shows that adding parents increases the range -- rather than filtering further
+(defn d [conn]
+  (let [filter-parents ["Vannevar Bush" "Doug Engelbart"]
+        x (posh/q conn child-q2 filter-parents )
+        ;; x (posh/q conn child-q2 )
+        filter-children ["Memex" "As we may think"]
+        y (posh/q conn parent-q2 filter-children)]
     (fn [conn]
       [:div.flex
        [:div
         [:h1 "Parents"]
+        [:b (pr-str filter-children)]
         [Lview first @y Li-parent]]
        [:div
         [:h1 "Children"]
+        [:b (pr-str filter-parents)]
+        [Lview first @x Li-child]]
+       [:div
+        [:button {:on-click #(d/transact! conn [{:node/title (str (rand 100))
+                                                 :set/_down [10]}])}
+         "Hey, what gives"]]])))
+
+
+(defcard-rg d-card
+  [d conn2])
+(defn c [conn]
+  (let [filter-parents ["Vannevar Bush"]
+        x (posh/q conn child-q2 filter-parents )
+        ;; x (posh/q conn child-q2 )
+        filter-children ["Memex"]
+        y (posh/q conn parent-q2 filter-children)]
+    (fn [conn]
+      [:div.flex
+       [:div
+        [:h1 "Parents"]
+        [:b (pr-str filter-children)]
+        [Lview first @y Li-parent]]
+       [:div
+        [:h1 "Children"]
+        [:b (pr-str filter-parents)]
         [Lview first @x Li-child]]
        [:div
         [:button {:on-click #(d/transact! conn [{:node/title (str (rand 100))
