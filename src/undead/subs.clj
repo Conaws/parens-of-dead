@@ -44,7 +44,7 @@
                                             xid (symbol (str x "id"))]]
                               [[xid :title x]
                                (list (symbol "child")
-                                     xid
+                                     (symbol "?x")
                                      (symbol "?cid"))]
                               )))
     })

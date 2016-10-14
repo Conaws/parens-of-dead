@@ -8,6 +8,7 @@
    [undead.cards.logic]
    [undead.cards.labels]
    [undead.cards.grid]
+   [undead.cards.yin]
    [undead.cards.demo]
    [undead.cards.dstests]
    [undead.cards.auto]

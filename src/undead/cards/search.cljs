@@ -14,15 +14,15 @@
    [undead.subs :refer [deftrack multi-filter mtest mquery]]))
 
 
-(def test-db (d/db-with (d/empty-db {:node/title {:db/unique :db.unique/identity}
-                                     :set/down {:db/valueType :db.type/ref
-                                                   :db/cardinality :db.cardinality/many}
-                                     :set/up  {:db/valueType :db.type/ref
+(def test-db (d/db-with (d/empty-db {:node/title        {:db/unique :db.unique/identity}
+                                     :set/down          {:db/valueType   :db.type/ref
                                                          :db/cardinality :db.cardinality/many}
-                                     :set/intersections  {:db/valueType :db.type/ref
-                                                  :db/cardinality :db.cardinality/many}
-                                     :intersection/of  {:db/valueType :db.type/ref
-                                                   :db/cardinality :db.cardinality/many}})
+                                     :set/up            {:db/valueType   :db.type/ref
+                                                         :db/cardinality :db.cardinality/many}
+                                     :set/intersections {:db/valueType   :db.type/ref
+                                                         :db/cardinality :db.cardinality/many}
+                                     :intersection/of   {:db/valueType   :db.type/ref
+                                                         :db/cardinality :db.cardinality/many}})
                         [{:db/id      1
                           :node/title "Books"}
                          {:db/id      2
@@ -35,22 +35,22 @@
                           :node/title "Favorite"}
                          {:db/id      6
                           :node/title "About"}
-                         {:db/id 7
-                          :node/title "Doug's Favorite Books"
+                         {:db/id           7
+                          :node/title      "Doug's Favorite Books"
                           :intersection/of #{4 5 1}}
-                         {:db/id 8
+                         {:db/id      8
                           :node/title "Memex"
-                          :set/up [3 4]}
-                         {:db/id 9
+                          :set/up     [3 4]}
+                         {:db/id      9
                           :node/title "Conor"}
-                         {:db/id 10
+                         {:db/id      10
                           :node/title "Conor's Favorite Lists"
-                          :set/up [9]
-                          :set/down [7]}
-                         {:db/id 11
+                          :set/up     [9]
+                          :set/down   [7]}
+                         {:db/id      11
                           :node/title "As we may think"
-                          :set/up #{3 7}
-                          :set/down #{8}}
+                          :set/up     #{3 7}
+                          :set/down   #{8}}
                          ]))
 
 
@@ -391,3 +391,5 @@
 ;;         the-db (datomic.api/db conn)]
 
 ;; (d/q expression-final the-db param-values) ))
+
+

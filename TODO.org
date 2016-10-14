@@ -172,9 +172,6 @@ CLOCK: [2016-10-08 Sat 05:41]--[2016-10-08 Sat 06:12] =>  0:31
 *
 
 ***  simple parents and node
-:LOGBOOK:
-CLOCK: [2016-10-08 Sat 06:12]
-:END:
 
 ** October 11, 2016
 
@@ -431,11 +428,152 @@ successfully have a macro-generated multi-arity child query
 
 07:28:19
 
+*** macro query
+
+
+what api I want
+
+
+ 
+#+BEGIN_SRC clojure
+  {:find find
+   :q-for [x ["A" "B" "C"]]
+   :in $ % arg-vec
+   :where 
+   (qfor [x arg-vec
+          :let [xid (str x id)]]
+       
+
+
+#+END_SRC
+
+ 
+
+#+BEGIN_SRC clojure
+  (for [i (range 20)]
+    "a")
+
+#+END_SRC
+
+***  08:08:00
+
+overtone
+
+* October 13, 2016
+
+** 14:45:45
+
+is it possible to do a datascript query using aggregates -- namely, count
+
+(d/q '[:find ?director ?movies 
+       :where
+       [?d :person/name ?director]
+       (< 3 (count ?movies))
+       [?movies :movie/director ?d]
+       [?movies :movie/title _]]
+     @conn)
+
+** 23:35:41
+
+(deftest test-dual-recursion
+  (let [empty (d/empty-db {:part { :db/valueType :db.type/ref }
+                           :spec { :db/valueType :db.type/ref }})]
+    (let [db (d/db-with empty [[:db/add 1 :part 2]
+                               [:db/add 2 :part 3]
+                               [:db/add 3 :part 1]
+                               [:db/add 1 :spec 2]
+                               [:db/add 2 :spec 1]])]
+      (is (= (d/pull db '[:db/id {:part ...} {:spec ...}] 1)
+             {:db/id 1,
+              :spec {:db/id 2
+                     :spec {:db/id 1,
+                            :spec {:db/id 2}, :part {:db/id 2}}
+                     :part {:db/id 3,
+                            :part {:db/id 1,
+                                   :spec {:db/id 2},
+                                   :part {:db/id 2}}}}
+              :part {:db/id 2
+                     :spec {:db/id 1, :spec {:db/id 2}, :part {:db/id 2}}
+                     :part {:db/id 3,
+                            :part {:db/id 1,
+                                   :spec {:db/id 2},
+                                   :part {:db/id 2}}}}})))))
+
+
+
+
+
+
+
+(deftest test-pull-default
+  (testing "Empty results return nil"
+    (is (nil? (d/pull test-db '[:foo] 1))))
+
+  (testing "A default can be used to replace nil results"
+    (is (= {:foo "bar"}
+           (d/pull test-db '[(default :foo "bar")] 1)))))
+
+
+
+   (testing "Multiple recursion specs in one pattern"
+      (is (= enemies (d/pull db '[:db/id :name {:friend 2 :enemy 2}] 4))))
+
+
+    (testing "Infinite recursion"
+      (is (= friends (d/pull db '[:db/id :name {:friend ...}] 4))))
+
+
+
+(deftest test-entity
+  (let [db (-> (d/empty-db {:aka {:db/cardinality :db.cardinality/many}})
+               (d/db-with [{:db/id 1, :name "Ivan", :age 19, :aka ["X" "Y"]}
+                           {:db/id 2, :name "Ivan", :sex "male", :aka ["Z"]}]))
+        e  (d/entity db 1)]
+    (is (= (:db/id e) 1))
+    (is (identical? (d/entity-db e) db))
+    (is (= (:name e) "Ivan"))
+    (is (= (e :name) "Ivan")) ; IFn form
+    (is (= (:age  e) 19))
+    (is (= (:aka  e) #{"X" "Y"}))
+    (is (= true (contains? e :age)))
+    (is (= false (contains? e :not-found)))
+    (is (= (into {} e)
+           {:name "Ivan", :age 19, :aka #{"X" "Y"}}))
+    (is (= (into {} (d/entity db 1))
+           {:name "Ivan", :age 19, :aka #{"X" "Y"}}))
+    (is (= (into {} (d/entity db 2))
+           {:name "Ivan", :sex "male", :aka #{"Z"}}))
+
+    (is (= (pr-str (d/entity db 1)) "{:db/id 1}"))
+    (is (= (pr-str (let [e (d/entity db 1)] (:unknown e) e)) "{:db/id 1}"))
+    ;; read back in to account for unordered-ness
+    (is (= (edn/read-string (pr-str (let [e (d/entity db 1)] (:name e) e)))
+(edn/read-string "{:name \"Ivan\", :db/id 1}")))))
+
+* October 14, 2016
+
+** 13:37:00
+to 13:56:44 setup
+
+** 13:56:49 -- 15:03:08
+meditation
+and figuring out how to posh vs deftrack work with q
+
+** 15:03:30 -- 19:14:17
+sanj time
+reading, stretching
+
+** 19:15:07
+
+parents and children
+
+
 
 
 
 
     
+
 
 
 
