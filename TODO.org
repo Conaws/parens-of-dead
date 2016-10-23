@@ -563,9 +563,30 @@ and figuring out how to posh vs deftrack work with q
 sanj time
 reading, stretching
 
-** 19:15:07
+** 19:15:07 -- 20:21:59
 
 parents and children
+
+got it working, now just have to animate it and make it look good
+
+and tie in a full view
+
+**  20:22:34
+
+break
+
+* October 15, 2016
+
+** 09:10:56
+
+get a simple persistence list going on actual roamana site
+
+09:20:34
+
+
+
+
+
 
 
 

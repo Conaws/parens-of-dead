@@ -19,7 +19,8 @@
                  [re-com "0.8.3"]
                  [cljsjs/d3 "4.2.2-0"]
                  [enlive "1.1.6"]
-                 [reanimated "0.5.0"]]
+                 [reanimated "0.5.0"]
+                 [soda-ash "0.1.0-beta"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"
@@ -44,7 +45,7 @@
                                          :source-paths ["src"]
                                          :figwheel { :devcards true
                                                     } ;; <- note this
-                                         :compiler { :main  undead.cards
+                                         :compiler {:main  undead.cards
                                                     :asset-path "js/devcards"
                                                     :output-to  "resources/public/js/compiled/devcards.js"
                                                     :output-dir "resources/public/js/devcards"
@@ -52,6 +53,7 @@
 
                                         ]}
                    :figwheel {
+                              :server-port 3909 
                               :css-dirs ["resources/public/css"]
                               }
                    }})
