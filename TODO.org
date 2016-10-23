@@ -583,6 +583,14 @@ get a simple persistence list going on actual roamana site
 
 09:20:34
 
+* October 23, 2016
+
+** 09:22:09
+
+boot https://github.com/adzerk-oss/boot-beanstalk
+
+
+
 
 
 

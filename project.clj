@@ -20,7 +20,9 @@
                  [cljsjs/d3 "4.2.2-0"]
                  [enlive "1.1.6"]
                  [reanimated "0.5.0"]
-                 [soda-ash "0.1.0-beta"]]
+                 [soda-ash "0.1.0-beta"]
+                 [day8/re-frame-tracer "0.1.1-SNAPSHOT"]
+                 [cljsjs/firebase "3.2.1-0"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"

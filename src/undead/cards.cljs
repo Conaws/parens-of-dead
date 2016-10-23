@@ -10,6 +10,7 @@
    [undead.cards.grid]
    [undead.cards.cloze]
    [undead.cards.attrs]
+   [undead.cards.fire2]
    [undead.cards.yin]
    [undead.cards.demo]
    [undead.cards.dstests]
