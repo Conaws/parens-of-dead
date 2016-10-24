@@ -15,6 +15,7 @@
    [undead.cards.demo]
    [undead.cards.dstests]
    [undead.cards.auto]
+   [undead.cards.multi]
    [undead.cards.d3]
    [undead.cards.keys]
    [undead.cards.animate]
