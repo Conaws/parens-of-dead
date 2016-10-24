@@ -22,7 +22,8 @@
                  [reanimated "0.5.0"]
                  [soda-ash "0.1.0-beta"]
                  [day8/re-frame-tracer "0.1.1-SNAPSHOT"]
-                 [cljsjs/firebase "3.2.1-0"]]
+                 [cljsjs/firebase "3.2.1-0"]
+                 [keybind "2.0.0"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"

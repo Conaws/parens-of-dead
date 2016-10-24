@@ -2,6 +2,8 @@
   (:require
    [goog.i18n.DateTimeFormat :as dtf]
    [posh.core :as posh :refer [posh!]]
+   [keybind.core :as keys]
+   [cljs.pprint :refer [pprint]]
    [datascript.core :as d]
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]])
@@ -42,37 +44,92 @@ or a formatting string like \"dd MMMM yyyy\""
 (def short-time (partial format-date* :SHORT_TIME))
 
 
+
+(def num->key
+  {8  :backspace
+   32 :space
+   13 :enter
+   38 :up
+   16 :shift
+   40 :down
+   37 :left
+   39 :right})
+
+(defn e->key
+  "Gets the key from a key event."
+  {:possible-output `{:key :enter, :modifiers #{:alt}}}
+  [e]
+  (let [n (or (.-keyCode e) (.-which e))]
+    {:key (get num->key n n)
+     :modifiers (disj (hash-set (when (.-altKey e) :alt)) nil)}))
+
+
+(def sdown (r/atom false))
+
+
+(def bind-keydown-listener
+  (js/addEventListener "keydown"
+                       (fn [e] (condp = (:key (e->key e))
+                                 16 (pprint "aaaa   ")
+                                 :shift (reset! sdown true)
+                                 :else
+                                 ))
+                       false
+                       ))
+(def bind-keyup-listener
+  (js/addEventListener "keyup"
+                       (fn [e] (condp = (:key (e->key e))
+                                 16 (pprint "aaaa   ")
+                                 :shift (reset! sdown false)
+                                 :else))
+                       false
+                       ))
+
+
 (deftest  time-test
   (testing "aaa"
     (is (= 1 1))))
 
-(def active-atom (r/atom [0 5]))
+(defonce active-atom (r/atom #{4 5 9}))
+(defonce mdown-atom (r/atom false))
 
-(defn grid-test [active-atom]
-  (fn []
-    (let [[j' k'] @active-atom]
-      [:table
-       (for [j (range 10)]
-         ^{:key (str "a" j)}
-         [:tr
-          (for [k (range 10)]
-            ^{:key (str "cell" j k)}
-            [:td.block
-                                     {:style {:background-color
-                                              (if (and (= k k')
-                                                       (= j j'))
-                                                "blue"
-                                                "white")}
-                                      :on-click #(reset! active-atom [j k])}
-             ;; (str  j' j) 
-                                     ])]
-         )
-       ]))
-
-  )
+(defn grid-test [active-atom sdown]
+  (let [mdown (r/atom false)]
+    (fn [active-atom sdown]
+      (let [k' @active-atom
+            items (range 100)]
+        [:table
+         {:on-mouse-down #(reset! mdown true)
+          :on-mouse-up #(reset! mdown false)
+          :on-mouse-leave #(reset! mdown false)
+         
+          }
+         [:thead (pr-str @sdown)]
+         [:tbody
+          (for [j (partition 10 items)]
+            ^{:key (str "a" j)}
+            [:tr
+             (for [k j]
+               ^{:key (str "cell" j k)}
+               [:td.block
+                {:style {:background-color
+                         (if (k' k)
+                           "blue"
+                           "white")}
+                 :on-click #(if (k' k)
+                             (swap! active-atom clojure.set/difference #{k})
+                             (swap! active-atom conj k))
+                 :on-mouse-enter #(when @mdown
+                                    (if @sdown
+                                      (swap! active-atom clojure.set/difference #{k})
+                                      (swap! active-atom conj k)))}
+                ;; (str  j' j) 
+                ])]
+            )]
+         ]))))
 
 (defcard-rg grid-card
-  [grid-test active-atom]
+  [grid-test active-atom sdown]
   active-atom
   {:inspect-data true
-   :history true})
+  :watch-atom true })
