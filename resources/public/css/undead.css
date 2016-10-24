@@ -473,3 +473,12 @@ ul.todo-list {background-color: blue;
     transition: transform 1000ms ease-in-out,
     opacity 2000ms ease-out;
 }
+
+
+
+
+.block {
+    height: 30px;
+    width: 30px;
+    border: 1px solid black;
+}

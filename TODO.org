@@ -589,6 +589,77 @@ get a simple persistence list going on actual roamana site
 
 boot https://github.com/adzerk-oss/boot-beanstalk
 
+** simuluation argument
+
+
+
+*** Aruguments
+
+*** Premise
+
+**** given: You don't need to simulate the whole universe each time
+
+**** given: Posthumans will have sufficent computing capacity to run
+
+
+
+
+***** really:  It is possible to simulate at this level
+
+****** Counter Arguments
+
+******* Information Density
+
+I would estimate at least 1e26 operations per second for a human mind, if our consciousness is purely algorithmic. If consciousness is even partially physical phenomena (which I suspect it is), you might have to calculate the actual participating physical particles and their interactions.
+
+About 10-20 grams of human is 6e23 molecules, so a brain would be about 6e25 molecules, and one molecule might require 1e20 calculations per second (or more perhaps quantum calculations).
+
+So the planet sized computer might struggle producing even one conscious human mind, since one conscious second might take 6e47 calculations, and the computer was able to perform only 1e42 per second.
+
+So one second of your conscious experience might take one week to recreate even with a planet sized computer.
+
+Also the speed of light causes serious limitations for planet sized computers. It takes 0.13 seconds for light to travel around the globe! If this is not taken into account, the power of the computer may be magnitudes less than advertised.
+
+So if consciousness is physical phenomena, simulations have huge disadvantages compared to actual beings, and we are more likely real, than a week per second planetary computers.
+
+******** You may not need to simulate every molecule in the brain
+
+******** Time only needs to be consistent for the observer
+
+******* Lossy Compression
+
+******** A universe is not able to simulate itself
+
+
+
+**** Substrate Independent Consciouness
+
+*** Conclusion
+
+**** Either
+
+***** We never reach posthuman state
+
+***** We won't want to create simulations
+
+***** Or, we're already living in a simulation, and physics of base reality may be much different
+
+** 19:50:57
+
+*** datascript subs
+[[file:~/src/examples/datascript/test/datascript/test/query_fns.cljc::(testing%20"Built-ins"][query-fns]] 
+
+subs 
+[(subs ?word 0 5) ?prefix]
+
+
+
+
+
+
+
+
+
 
 
 

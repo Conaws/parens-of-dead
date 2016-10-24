@@ -18,6 +18,7 @@
    [undead.cards.d3]
    [undead.cards.keys]
    [undead.cards.animate]
+   [undead.cards.thenvenn.day]
    [undead.cards.zombies]
    [reagent.core :as r])
   (:require-macros
