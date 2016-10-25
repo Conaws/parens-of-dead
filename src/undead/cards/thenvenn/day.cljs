@@ -133,3 +133,42 @@ or a formatting string like \"dd MMMM yyyy\""
   active-atom
   {:inspect-data true
   :watch-atom true })
+
+
+;;; The first question right now is -- should inheritance be different from
+;;; membership?
+;;; I'll use term ancestor for now -- although parent might be better
+;;; I'll just have a different thing for blocks 
+
+
+(def thenvenn-data
+  [{:db/id -1
+    :set/title "Priorities"}
+   {:db/id -2
+    :set/title "Completed"}
+   {:db/id -3
+    :set/title "Email"
+    :set/ancestor #{-4}}
+   {:db/id -4
+    :set/title "Busywork"}
+   {:db/id -5
+    :set/title "Email Amanda Peyton"
+    :set/ancestor #{-3 -1}
+    :set/exclude #{-5}}
+   {:db/id -6
+    :set/title "Create a Reagent typeahead style autocomplete"
+    :set/ancestor #{-1
+                    -2
+                    {:db/id -7
+                     :set/title "Reagent"}
+                    {:db/id -8
+                     :set/title "Autocomplete"}
+                    {:db/id -9
+                     :set/title "Create"}
+                    }}
+   ]
+
+
+  )
+
+
