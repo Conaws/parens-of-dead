@@ -63,11 +63,14 @@
         selected-index (r/atom -1)
         typeahead-hidden? (r/atom false)
         mouse-on-list? (r/atom false)
-        selections (r/atom #{ "A" "B" })
+        selections (r/atom ["A" "B"])
+        
         save! #(swap! selections conj %)
         ]
     (fn []
-      (let [options  (if (clojure.string/blank? @a)
+      (let [delete! #(if (clojure.string/blank? @a)
+                       (swap! selections pop))
+            options  (if (clojure.string/blank? @a)
                        []
                        (filter
                         #(-> % (.toLowerCase %) (.indexOf @a) (> -1))
@@ -77,56 +80,60 @@
                                        (> @selected-index -1))
                               (let [choice (nth matching-options @selected-index)]
                                 (save! choice)
+                                (reset! selected-index 0)
                                 (reset! a ""))
-                              (do
-                                (save! @a)
-                                (reset! a "")))
+                              (when (not (str/blank? @a))
+                                (do
+                                  (save! @a)
+                                  (reset! selected-index 0)
+                                  (reset! a ""))))
 
             ]
-        [:div.bblack
-         (when @selections
-           (for [x @selections]
-                            ^{:key x}[:button {:on-click #(swap! selections (fn [y] (remove #{x} y)))}(str x)]
-                            ))
-         [:span (pr-str @selected-index)]
-         [:input
-          {:value @a
-           :on-change #(reset! a (-> % .-target .-value))
-           :on-key-down #(do
-                           (case (.-which %)
-                             38 (do
-                                  (.preventDefault %)
-                                  (when-not (= @selected-index -1)
-                                    (swap! selected-index dec)))
-                             40 (do
-                                  (.preventDefault %)
-                                  (when-not (= @selected-index (dec (count matching-options)))
-                                    (swap! selected-index inc)))
-                             9  (choose-selected)
-                             13 (choose-selected)
-                             27 (do (reset! typeahead-hidden? true)
-                                    (reset! selected-index -1))
-                             "default"))}]
+        [:div.tags.flex
+         [:div.tags-output
+          (when @selections
+            (for [x @selections]
+              ^{:key x}[:button {:on-click #(swap! selections (fn [y] (remove #{x} y)))}(str x)]
+              ))
+          [:input.tags-input
+           {:value @a
+            :on-change #(reset! a (-> % .-target .-value))
+            :on-key-down #(do
+                            (case (.-which %)
+                              38 (do
+                                   (.preventDefault %)
+                                   (when-not (= @selected-index -1)
+                                     (swap! selected-index dec)))
+                              40 (do
+                                   (.preventDefault %)
+                                   (when-not (= @selected-index (dec (count matching-options)))
+                                     (swap! selected-index inc)))
+                              9  (choose-selected)
+                              13 (choose-selected)
+                              8 (delete!)
+                              27 (do #_(reset! typeahead-hidden? true)
+                                     (reset! selected-index -1))
+                              "default"))}]
 
-         [:ul {:style
-               {:display (if (or (empty? matching-options) @typeahead-hidden?) :none :block) }
-               :class list-class
-               :on-mouse-enter #(reset! mouse-on-list? true)
-               :on-mouse-leave #(reset! mouse-on-list? false)}
-          (doall
-           (map-indexed
-            (fn [index result]
-              [:li {:tab-index     index
-                    :key           index
-                    :class         (if (= @selected-index index) highlight-class item-class)
-                    :on-mouse-over #(do
-                                      (reset! selected-index (js/parseInt (.getAttribute (.-target %) "tabIndex"))))
-                    :on-click      #(do
-                                      (reset! a "")
+          [:ul {:style
+                {:display (if (or (empty? matching-options) @typeahead-hidden?) :none :block) }
+                :class list-class
+                :on-mouse-enter #(reset! mouse-on-list? true)
+                :on-mouse-leave #(reset! mouse-on-list? false)}
+           (doall
+            (map-indexed
+             (fn [index result]
+               [:li {:tab-index     index
+                     :key           index
+                     :class         (if (= @selected-index index) highlight-class item-class)
+                     :on-mouse-over #(do
+                                       (reset! selected-index (js/parseInt (.getAttribute (.-target %) "tabIndex"))))
+                     :on-click      #(do
+                                       (reset! a "")
                                        (save! result)
-                                    )}
-               result])
-            matching-options))]])
+                                       )}
+                result])
+             matching-options))]]])
        )))
 
 (defcard-rg bbc
