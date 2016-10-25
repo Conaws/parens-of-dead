@@ -63,25 +63,31 @@
         selected-index (r/atom -1)
         typeahead-hidden? (r/atom false)
         mouse-on-list? (r/atom false)
-        selections (r/atom ["A" "B"])
+        selections (r/atom #{ "A" "B" })
         save! #(swap! selections conj %)
         ]
     (fn []
-      (let [options  (filter
-                      #(-> % (.toLowerCase %) (.indexOf @a) (> -1))
-                      options)
+      (let [options  (if (clojure.string/blank? @a)
+                       []
+                       (filter
+                        #(-> % (.toLowerCase %) (.indexOf @a) (> -1))
+                        options))
             matching-options (filter (comp not (set @selections)) options)
-            choose-selected #(when (and (not-empty matching-options)
+            choose-selected #(if (and (not-empty matching-options)
                                        (> @selected-index -1))
                               (let [choice (nth matching-options @selected-index)]
                                 (save! choice)
+                                (reset! a ""))
+                              (do
+                                (save! @a)
                                 (reset! a "")))
 
             ]
         [:div.bblack
-         (for [x @selections]
-           ^{:key x}[:button {:on-click #(swap! selections (fn [y] (remove #{x} y)))}(str x)]
-           )
+         (when @selections
+           (for [x @selections]
+                            ^{:key x}[:button {:on-click #(swap! selections (fn [y] (remove #{x} y)))}(str x)]
+                            ))
          [:span (pr-str @selected-index)]
          [:input
           {:value @a
@@ -90,21 +96,20 @@
                            (case (.-which %)
                              38 (do
                                   (.preventDefault %)
-                                  (when-not (= @selected-index 0)
+                                  (when-not (= @selected-index -1)
                                     (swap! selected-index dec)))
                              40 (do
                                   (.preventDefault %)
-                                  (when-not (= @selected-index (dec (count @selections)))
-                                    ;; (save! id (value-of %))
+                                  (when-not (= @selected-index (dec (count matching-options)))
                                     (swap! selected-index inc)))
                              9  (choose-selected)
                              13 (choose-selected)
                              27 (do (reset! typeahead-hidden? true)
-                                    (reset! selected-index 0))
+                                    (reset! selected-index -1))
                              "default"))}]
 
          [:ul {:style
-               {:display (if (or (empty? @selections) @typeahead-hidden?) :none :block) }
+               {:display (if (or (empty? matching-options) @typeahead-hidden?) :none :block) }
                :class list-class
                :on-mouse-enter #(reset! mouse-on-list? true)
                :on-mouse-leave #(reset! mouse-on-list? false)}
@@ -117,16 +122,16 @@
                     :on-mouse-over #(do
                                       (reset! selected-index (js/parseInt (.getAttribute (.-target %) "tabIndex"))))
                     :on-click      #(do
-                                      (reset! typeahead-hidden? true)
-                                       (swap! selections conj result)
-                                      #_(choice-fn result))}
+                                      (reset! a "")
+                                       (save! result)
+                                    )}
                result])
             matching-options))]])
        )))
 
 (defcard-rg bbc
   [multi {:highlight-class "highlight"
-          :options ["E" "F" "Ab""Abb"]}]
+          :options ["E" "F" "Ab""Abb" "bbbAaaa"]}]
   )
 
 
@@ -144,6 +149,8 @@
                     :on-save #(swap! selections conj %)}
         ]
        ])))
+
+
 
 (defcard-rg bc
   [multi2])
