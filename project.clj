@@ -12,6 +12,8 @@
                  [compojure "1.5.1"]
                  [com.rpl/specter "0.12.0"]
                  [devcards "0.2.1-7"]
+                 [cljsjs/jquery "2.2.2-0"]
+                 [cljsjs/typeahead-bundle "0.11.1-1"]
                  [reagent "0.6.0-SNAPSHOT"]
                  [posh "0.3.5"]
                  [datascript "0.15.4"]
@@ -23,7 +25,8 @@
                  [soda-ash "0.1.0-beta"]
                  [day8/re-frame-tracer "0.1.1-SNAPSHOT"]
                  [cljsjs/firebase "3.2.1-0"]
-                 [keybind "2.0.0"]]
+                 [keybind "2.0.0"]
+                 [reagent-forms "0.5.27"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"
@@ -46,9 +49,9 @@
                                                     :source-map true}}
                                         {:id "devcards"
                                          :source-paths ["src"]
-                                         :figwheel { :devcards true
-                                                    } ;; <- note this
+                                         :figwheel {:devcards true} ;; <- note this
                                          :compiler {:main  undead.cards
+                                                    :optimizations :none
                                                     :asset-path "js/devcards"
                                                     :output-to  "resources/public/js/compiled/devcards.js"
                                                     :output-dir "resources/public/js/devcards"

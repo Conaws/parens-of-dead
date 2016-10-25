@@ -447,6 +447,7 @@ ul.todo-list {background-color: blue;
 
 
 
+
 .slider {width: 100%;
          height: 50px;
          padding: 10px 0px;
@@ -475,7 +476,9 @@ ul.todo-list {background-color: blue;
 }
 
 
-
+.highlight {
+    background-color: green;
+}
 
 .block {
     height: 30px;
