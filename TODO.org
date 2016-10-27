@@ -675,6 +675,24 @@ https://www.flickr.com/photos/morville/sets/72157603994869658/
 :set/prototype "Creation"
 :attribute/transformations {:attribute/original "Creator", :attribute/relabeled "Author"}
 
+** 12:45:21 reminder on queries
+
+Reminder -- when you're doing OR filtering, just get back the results from whole db, then apply set on filter combinations
+Use the queries for your ORs, and set/intersection for the ands
+
+** 13:32:45
+
+note -- the way I'm doing subsets in the filter won't scale
+I'm treating Hafiz as a subset of Poets -- he really should be a member
+but in this case, I want to filter on him, so he's getting treated as a subset
+not the worst violation 
+
+basically, the only thing that are "members" right now are the poems
+
+long term, I'll need to straighten that out, so that, rather than looking for members
+you just take the base "type", and you look for the elements that have those, and treat those as members rather than subsets
+
+
 
 
 

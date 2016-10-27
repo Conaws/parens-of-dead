@@ -12,6 +12,7 @@
    [re-com.core :as rc])
   (:require-macros
    [cljs.test  :refer [testing is]]
+   [undead.subs :refer [deftrack]]
    [devcards.core
     :as dc
     :refer [defcard defcard-doc defcard-rg deftest]]) )
@@ -41,9 +42,7 @@ We keep
 Bumping into each other
 And laughing."
     }
-   {:db/id -2
-    :set/title "Poem"
-    :set/members [-1]}
+   
 
    {:db/id -3
     :set/title "Culture"
@@ -60,26 +59,29 @@ And laughing."
    {:db/id -8
     :set/title "Author"
     :set/subsets [{:set/title "Poet"
-                   :set/members [-9]}]}
+                   :set/subsets [-9]}]}
    {:db/id -9
     :set/title "Hafiz"
     :set/members [-1 -14]}
 
    {:db/id -10
     :set/title "Theme"
-    :set/members [-11]
     :set/subsets [-11]}
    {:db/id -11
-    :set/title "The Divine"}
+    :set/title "The Divine"
+    :set/members [-1]}
 
    {:db/id -12
     :set/title "Type"
     :set/subsets [-13]}
    {:db/id -13
     :set/title "Poem"
-    :set/attributes [-10 -8 -3]}
+    :set/attributes [-10 -8 -3]
+    :set/members [-1 -14]
+    }
 
    {:db/id -14
+    :set/title "The School of Truth"
     :set/text "O fool, do something, so you won't just stand there looking dumb.
 If you are not traveling and on the road, how can you call yourself a guide?
 
@@ -113,6 +115,22 @@ Be the dust at the Wise One's door, and speak!" }])
 (def poem-db (d/db-with (d/empty-db poem-schema)
                         poemdb))
 
+(def attr-query '[:find [(pull ?attributes
+                               [:set/title :set/members
+                                {:set/subsets ...}]) ...]
+                  :in $ ?type
+                  :where [?e :set/title ?type]
+                  [?e :set/attributes ?attributes]
+                  ])
+
+
+(def subset-rule
+  '[[(member ?p ?e)
+     [?p :set/members ?e]]
+    [(member ?p ?e)
+     [?p :set/subsets ?p1]
+     (member ?p1 ?e)]
+    ])
 
 (deftest poem-queries
   (testing "the attributes of a poem"
@@ -129,26 +147,52 @@ Be the dust at the Wise One's door, and speak!" }])
              [{:set/title "Poet", :set/members [{:db/id 10}]}]}
             {:set/title "Theme",
              :set/members [{:db/id 13}],
-             :set/subsets [{:set/title "The Divine"}]}]
+             :set/subsets [{:set/title "The Divine"
+                            :set/members [{:db/id 1}]}]}]
            (d/q
-            '[:find [(pull ?attributes [:set/title :set/members {:set/subsets ...}] ) ...]
-              :in $ ?type
-              :where [?e :set/title ?type]
-              [?e :set/attributes ?attributes]
-              ]
+            attr-query
             poem-db
-            "Poem")))))
+            "Poem")))
+
+    (is (= ["Two Giant Fat People""The School of Truth"] (d/q '[:find [?poems ...]
+                                                                :in $ % ?parent
+                                                                :where
+                                                                [?p :set/title ?parent]
+                                                                (member ?p ?e)
+                                                                [?e :set/title ?poems]
+                                                                ]
+                                                              poem-db
+                                                              subset-rule
+                                                              "Hafiz")))
+    (is (= ["Two Giant Fat People"] (d/q '[:find [?poems ...]
+                                           :in $ % ?parent
+                                           :where
+                                           [?p :set/title ?parent]
+                                           (member ?p ?e)
+                                           [?e :set/title ?poems]
+                                           ]
+                                         poem-db
+                                         subset-rule
+                                         "Islamic")))
+    (is (= ["Two Giant Fat People"] (d/q '[:find [?poems ...]
+                                         :in $ % ?parent
+                                         :where
+                                         [?p :set/title ?parent]
+                                         (member ?p ?e)
+                                         [?e :set/title ?poems]
+                                         ]
+                                       poem-db
+                                       subset-rule
+                                       "Culture")))
+    ))
 
 
 
 
-(def attr-query '[:find [(pull ?attributes
-                               [:set/title :set/members
-                                {:set/subsets ...}]) ...]
-                  :in $ ?type
-                  :where [?e :set/title ?type]
-                  [?e :set/attributes ?attributes]
-                  ])
+
+
+
+
 
 
 
@@ -160,14 +204,16 @@ Be the dust at the Wise One's door, and speak!" }])
     (fn []
       (let [member-count (count members)]
         [:div
-         [rc/h-box
-          :gap "15px"
-          :children [[rc/checkbox
-                      :label title
-                      :model my-atom
-                      :on-change #(reset! my-atom %)]
-                     (when (< 0 member-count)
-                       [:span member-count])]]
+         (if (< 0 member-count)
+           [rc/h-box
+            :gap "15px"
+            :children [[rc/checkbox
+                        :label title
+                        :model my-atom
+                        :on-change #(reset! my-atom %)]
+                       [:span member-count]
+                       ]]
+           [:label title])
          [:div.indent
           (for [[x s] (map-indexed vector subsets)]
             ^{:key (str title x)}
@@ -187,3 +233,123 @@ Be the dust at the Wise One's door, and speak!" }])
                   :set/subsets
                   [{:set/title "Sufi", :set/members [{:db/id 1}]}]}]}]
   )
+
+
+
+(defcard-rg dfilter22
+  (let [attrs (d/q attr-query poem-db "Poem")]
+    [rc/h-box     :width "500px"
+
+     :gap "1em"
+     :children (vec
+                (for [{:keys [set/title set/members set/subsets]} attrs]
+                  ^{:key title}
+                  [:div.left-bblack
+                   [:h1 title]
+                   (for [a subsets]
+                     [demo-filter a])]))]))
+
+
+
+
+
+(def poemdb2
+  (vec (concat poemdb
+               [{:db/id -15
+                 :set/title "Conor's Poem"
+                 :set/text "Ay we go, eyn, do, trey, caher"
+                 :set/_members[{:db/id -16
+                                :set/title "Irish"
+                                :set/_subsets
+                                [{:set/title "European"
+                                  :set/_members [-3]
+                                  }] }
+                               -13]}]
+              )))
+
+
+(def poem-conn (d/conn-from-db (d/db-with (d/empty-db poem-schema)
+                                          poemdb2)))
+
+(posh! poem-conn)
+
+(deftest poem-query
+  (let [member-title-query '[:find [?poems ...] 
+                             :in $ % [?parent ...]
+                             :where
+                             [?p :set/title ?parent]
+                             (member ?p ?e)
+                             [?e :set/title ?poems]
+                             ]]
+    (testing "Only European Poems"
+      (is (= ["Conor's Poem"]
+             (d/q member-title-query
+                  @poem-conn
+                  subset-rule
+                  ["European"])
+             )
+          ))
+    (testing "European and Sufi Poems"
+      (is (= #{ "Conor's Poem" "Two Giant Fat People" }
+             (set (d/q member-title-query
+                       @poem-conn
+                       subset-rule
+                       ["European" "Sufi"]))
+             )
+          ))
+    (testing "All Poems"
+      (is (= [1 10 15]
+             (d/q '[:find [?e ...] 
+                   :in $ % [?parent ...]
+                  :where
+                   [?p :set/title ?parent]
+                   (member ?p ?e)
+                   ]
+                  @poem-conn
+                  subset-rule
+                  ["Poem"])
+             )
+          ))))
+
+
+(deftrack matching-or
+  [conn & matches]
+
+  "takes n eids and returns a track with set of members, including in subsets"
+
+  (set @(posh/q conn '[:find [?e ...]
+                       :in $ % [?p ...]
+                       :where (member ?p ?e)]
+                subset-rule
+                matches)))
+
+
+(deftrack intersection [& xs]
+  (apply set/intersection (map deref xs)))
+
+
+(deftest applying-filters
+  (testing "Conn intersections"
+    (is (= #{3 4} @(intersection (r/atom #{3 4 5}) (r/atom #{2 3 4})))))
+  (testing "get all the poems"
+    (is (= #{1 10 15}
+           @(matching-or poem-conn 13))))
+  (testing "get the Irish poem"
+    (is (= #{15}
+           @(intersection
+             (matching-or poem-conn 13)
+             (matching-or poem-conn 16)
+             )
+           ))
+    )
+
+
+  )
+
+
+
+
+
+
+
+

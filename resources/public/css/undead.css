@@ -549,3 +549,8 @@ ul.todo-list {background-color: blue;
 .indent {
     margin-left: 15px;
 }
+
+.left-bblack {
+    border-left: 1px solid black;
+    padding-left: 10px;
+}

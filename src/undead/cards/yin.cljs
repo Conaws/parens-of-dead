@@ -134,9 +134,13 @@
     [?e :node/title ?title]
     [?e :set/down ?y]])
 
+
+
 (deftrack q-join [conn query argvec]
   (apply set/intersection (for [a argvec]
                             (set @(posh/q conn query a)))))
+
+
 
 (deftrack q-all [conn query argvec]
   (for [a argvec]
