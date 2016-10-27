@@ -14,7 +14,7 @@
    [re-com.core :as rc])
   (:require-macros
    [cljs.test  :refer [testing is]]
-   [com.rpl.specter.macros :refer [select]]
+   [com.rpl.specter.macros :refer [select select-one defpathedfn providepath declarepath]]
    [undead.subs :refer [deftrack]]
    [devcards.core
     :as dc
@@ -60,7 +60,8 @@ Bumping into each other
 And laughing."
     }
    
-
+   {:db/id -2
+    :set/title "Don't break stuff"}
    {:db/id -3
     :set/title "Culture"
     :set/subsets [{:db/id -4
@@ -279,7 +280,7 @@ Be the dust at the Wise One's door, and speak!" }])
                                 :set/title "Irish"
                                 :set/_subsets
                                 [{:set/title "European"
-                                  :set/_members [-3]
+                                  :set/_subsets [-3]
                                   }] }
                                -13]}]
               )))
@@ -462,10 +463,7 @@ Be the dust at the Wise One's door, and speak!" }])
            attr))
 
 
-(defonce app-state (r/atom {:queries {2 {:id 2
-                                         :selected #{5}}
-                                      7 {:id 7
-                                         :selected #{ 9 }}}}))
+(defonce app-state (r/atom {:queries {}}))
 
 
 
@@ -556,7 +554,6 @@ Be the dust at the Wise One's door, and speak!" }])
                                   7 {:id 7
                                      :selected #{ 9 }} }}))
 
-;; (get-in db [:queries t :selected]) (:db/id s)
 (defn filter-load2 [a conn db]
   (let [x (posh/pull conn '[:set/title :db/id
                             {:set/subsets ...
@@ -566,6 +563,9 @@ Be the dust at the Wise One's door, and speak!" }])
       (let [t (:db/id @x)]
         [:div
          [:h1 (:set/title @x)]
+         [:div.bblack
+          ]
+
          (doall (for [s (:set/subsets @x)
                       :let [sid (:db/id s)
                             included? (contains? (get-in @db [:queries t :selected]) sid)]]
@@ -595,12 +595,9 @@ Be the dust at the Wise One's door, and speak!" }])
                 "Poem")]
     (fn [conn db]
       [:div
-       [:h1 (pr-str @qattrs)]
        (for [a @qattrs]
               ^{:key (pr-str a)}
-              [filter-load2 a conn db]
-
-              )]
+              [filter-load2 a conn db])]
 
       )
       )
@@ -624,10 +621,31 @@ Be the dust at the Wise One's door, and speak!" }])
 
 (defcard-rg ffff2
   (fn []
-    [:div.flex
-     [:div (str
-            (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state))]
-     [filter22 poem-conn app-state]]))
+    (let [filters (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state)
+          poem-q (posh/q poem-conn '[:find [?e ...]
+                                :in $ ?type
+                                :where [?p :set/title ?type]
+                                [?p :set/members ?e]]
+                         "Poem")]
+      [:div.flex
+       [:div (pr-str
+              (if (empty? filters)
+                (set @poem-q)
+                (apply set/intersection
+                       (set @poem-q)
+                       (map deref
+                            (map
+                             #(matching-or poem-conn %)
+                             (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state))))))]
+       [filter22 poem-conn app-state]])))
+
+
+
+
+(declarepath TOPSORT)
+(providepath TOPSORT
+             (sp/stay-then-continue
+              :set/subsets ALL TOPSORT))
 
 
 
@@ -635,13 +653,105 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
+(deftest pulling-deep-nodes
+  (let [nodes [{:set/title "Culture",
+                :set/subsets
+                [{:set/title "Middle Eastern",
+                  :set/subsets
+                  [{:set/title "Persian", :set/members [{:db/id 1}]}]}
+                 {:set/title "Islamic",
+                  :set/subsets
+                  [{:set/title "Sufi", :set/members [{:db/id 1}]}]}]}
+               {:set/title "Author",
+                :set/subsets
+                [{:set/title "Poet", :set/members [{:db/id 10}]}]}
+               {:set/title "Theme",
+                :set/members [{:db/id 13}],
+                :set/subsets [{:set/title "The Divine"
+                               :set/members [{:db/id 1}]}]}]
+        nodes2 (posh/pull poem-conn '[:set/title :db/id
+                                      {:set/subsets ...
+                                       :set/members ...}] 3)
+        ]
+    (testing "pulling nodes out"
+      (is (= []
+             (select [ALL TOPSORT :set/title] nodes)))
 
+      (is (= (map :set/title (select [TOPSORT] @nodes2))
+             (select [TOPSORT :set/title] @nodes2)))
+      )
+    
+    )
 
+  )
 
+(defn filter-load3 [a conn db]
+  (let [x (posh/pull conn '[:set/title :db/id
+                            {:set/subsets ...
+                             :set/members ...}] a)
+        ]
+    (fn [a conn db]
+      (let [t (:db/id @x)
+            subsets (select [:set/subsets ALL TOPSORT] @x)]
+        [:div
+         [:h1 (:set/title @x)]
+         
 
+         (doall (for [s subsets
+                      :let [sid (:db/id s)
+                            included? (contains? (get-in @db [:queries t :selected]) sid)]]
+                  [rc/h-box
+                   :children [[:label (:set/title s)]
+                              [:input
+                               {:type "checkbox"
+                                :checked included?
+                                :on-click #(do
+                                             (if included?
+                                               (swap! db update-in
+                                                      [:queries t :selected] disj sid)
+                                               (swap! db update-in
+                                                      [:queries t :selected] (fnil conj #{}) (:db/id s))))}]]]
+                  ))]
 
+        ))))
 
+(defn filter-3 [conn db]
+  (let [qattrs
+        (posh/q conn '[:find [?attrs ...]
+                       :in $ ?type
+                       :where
+                       [?e :set/title ?type]
+                       [?e :set/attributes ?attrs]]
+                "Poem")]
+    (fn [conn db]
+      [:div
+       (for [a @qattrs]
+         ^{:key (pr-str a)}
+         [filter-load3 a conn db])]
 
+      )
+    )
+  )
 
+(defcard-rg ffff3
+  (fn []
+    (let [filters (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state)
+          poem-q (posh/q poem-conn '[:find [?e ...]
+                                     :in $ ?type
+                                     :where [?p :set/title ?type]
+                                     [?p :set/members ?e]]
+                         "Poem")]
+      [:div.flex
+       [filter-3 poem-conn app-state]
+       [:div (pr-str
+              (if (empty? filters)
+                (set @poem-q)
+                (apply set/intersection
+                       (set @poem-q)
+                       (map deref
+                            (map
+                             #(matching-or poem-conn %)
+                             (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state))))))]
+       ])))
 
 
