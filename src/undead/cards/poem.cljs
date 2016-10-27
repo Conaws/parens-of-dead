@@ -299,7 +299,7 @@ Be the dust at the Wise One's door, and speak!" }])
           ))
     (testing "All Poems"
       (is (= [1 10 15]
-             (d/q '[:find [?e ...] 
+             (d/q '[:find [?e ...]
                    :in $ % [?parent ...]
                   :where
                    [?p :set/title ?parent]
@@ -313,7 +313,7 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 (deftrack matching-or
-  [conn & matches]
+  [conn matches]
 
   "takes n eids and returns a track with set of members, including in subsets"
 
@@ -333,22 +333,95 @@ Be the dust at the Wise One's door, and speak!" }])
     (is (= #{3 4} @(intersection (r/atom #{3 4 5}) (r/atom #{2 3 4})))))
   (testing "get all the poems"
     (is (= #{1 10 15}
-           @(matching-or poem-conn 13))))
+           @(matching-or poem-conn [13]))))
   (testing "get the Irish poem"
     (is (= #{15}
            @(intersection
-             (matching-or poem-conn 13)
-             (matching-or poem-conn 16)
+             (matching-or poem-conn [13])
+             (matching-or poem-conn [16])
              )
            ))
     )
+  )
+
+
+(deftrack query-from-state [db]
+  (let [qs (:queries db)
+        active-qs (filter (comp #(< 0 %) count :selected) qs)
+        conn (:conn db)]
+    @(apply intersection
+      (for [a (map :selected active-qs)]
+        (matching-or conn a)))))
+
+
+
+(deftest applying-filters-via-state
+  (let [state {:conn poem-conn
+               :queries [{:id 5
+                          :selected [13]}
+                         {:id 6
+                          :selected []}
+                         {:id 7
+                          :selected [16]}]}] 
+
+    (testing
+        (is 
+         (= [{:id 5
+              :selected [13]}
+             {:id 7
+              :selected [16]}]
+            (filter (comp #(< 0 %) count :selected) (:queries state))
+            )))
+    (testing "get the Irish poem"
+      (is (= #{15}
+             @(query-from-state state)
+             @(intersection
+               (matching-or poem-conn [13])
+               (matching-or poem-conn [16])
+               )
+             ))
+      ))
+
 
 
   )
 
 
 
+(defn filter-view [{:keys [set/title set/subsets set/members] :as n} ]
+  (let [my-atom (r/atom false)]
+    (fn []
+      (let [member-count (count members)]
+        [:div
+         (if (< 0 member-count)
+           [rc/h-box
+            :gap "15px"
+            :children [[rc/checkbox
+                        :label title
+                        :model my-atom
+                        :on-change #(reset! my-atom %)]
+                       [:span member-count]
+                       ]]
+           [:label title])
+         [:div.indent
+          (for [[x s] (map-indexed vector subsets)]
+            ^{:key (str title x)}
+            [demo-filter s])]]))))
 
+
+
+
+
+(defcard-rg filter-view-card
+  [filter-view {:set/title "Culture",
+                :set/subsets
+                [{:set/title "Middle Eastern",
+                  :set/subsets
+                  [{:set/title "Persian", :set/members [{:db/id 1}]}]}
+                 {:set/title "Islamic",
+                  :set/subsets
+                  [{:set/title "Sufi", :set/members [{:db/id 1}]}]}]}]
+  )
 
 
 
