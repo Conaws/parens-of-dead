@@ -5,7 +5,6 @@
    [re-com.core :as rc :refer [v-box box input-text h-box]]
    [datascript.core :as d]
    [reagent-forms.core :refer [bind-fields]]
-   [clojure.string :as str]
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]])
   (:require-macros
@@ -136,9 +135,9 @@
              matching-options))]]])
        )))
 
-(defcard-rg bbc
+(defcard-rg tags-example
   [multi {:highlight-class "highlight"
-          :options ["E" "F" "Ab""Abb" "bbbAaaa"]}]
+          :options ["Reagent""Re-frame""Re-com""Reaction"]}]
   )
 
 

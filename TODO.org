@@ -692,14 +692,62 @@ basically, the only thing that are "members" right now are the poems
 long term, I'll need to straighten that out, so that, rather than looking for members
 you just take the base "type", and you look for the elements that have those, and treat those as members rather than subsets
 
+** 14:39:54
+
+
+Nice helpers
+
+(defn constrain [v min-v max-v]
+  (cond (< v min-v) min-v
+        (> v max-v) max-v
+        :else v))
+
+(defn e->translation [e {:keys [mouse-start-state elem-start-state]}]
+  (let [[delta-x delta-y] (mouse-delta e mouse-start-state)]
+    {:x (constrain (+ (:x elem-start-state) delta-x) 0 (:canvas-width config))
+     :y (constrain (+ (:y elem-start-state) delta-y) 0 (:canvas-height config))}))
+
+
+
+
+(defn drag-move [e]
+  (when (:dragging (selected-elem))
+    (swap-selected-elem! merge (e->translation e @transients))))
+
+(defn drag-end [e]
+  (when (:dragging (selected-elem))
+    (swap-selected-elem! merge (e->translation e @transients) {:dragging false})
+    (set-cursor! :auto)))
 
 
 
 
 
 
+;;; also potentially useful
+
+;;; alll from here https://github.com/yayitswei/t-edit/blob/master/src/tedit/core.cljs
+
+(defn dominant [f values]
+  (apply (partial max-key Math/abs) values))
+
+(defn e->scale [e {:keys [mouse-start-state elem-start-state]}]
+  (let [deltas (mouse-delta e mouse-start-state)]
+    #_(swap! debug merge {:font-size new-font-size :deltas (print-str deltas)
+                        :dominant-delta (dominant Math/abs deltas)})
+    (case (:type elem-start-state)
+      :text {:font-size (max (+ (:font-size elem-start-state)
+                                (dominant Math/abs deltas)) 10)}
+      :art {:scale (max (+ (:scale elem-start-state)
+                           (/ (dominant Math/abs deltas) 100)) 0.1)})))
+
+** 14:45:51 better draggable example
+
+https://github.com/borkdude/draggable-button-in-reagent/blob/master/src-cljs/drag/main.cljs
 
 
+now.. this is pretttyyy gnarly in some ways, quite low level
+but... that has tradeoffs good and bad --- what is droppable?
 
 
 

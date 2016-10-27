@@ -26,7 +26,9 @@
                  [day8/re-frame-tracer "0.1.1-SNAPSHOT"]
                  [cljsjs/firebase "3.2.1-0"]
                  [keybind "2.0.0"]
-                 [reagent-forms "0.5.27"]]
+                 [reagent-forms "0.5.27"]
+                 [cljsjs/dragula "3.6.8-0"]
+                 [org.clojars.frozenlock/reagent-table "0.1.3"]]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
                   "target"

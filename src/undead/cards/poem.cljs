@@ -2,6 +2,7 @@
   (:require
    [goog.i18n.DateTimeFormat :as dtf]
    [posh.core :as posh :refer [posh!]]
+   [reagent-table.core :as rt]
    [cljs-time.core :as time :refer [now]]
    [keybind.core :as keys]
    [cljs.pprint :refer [pprint]]
@@ -28,7 +29,21 @@
                   :set/members          {:db/valueType   :db.type/ref
                                     :db/cardinality :db.cardinality/many}})
 
+#_(defcard-rg tabletester
+  (fn []
+    [rt/reagent-table (r/atom {:headers ["Row 1" "Row 2" "Row 5" "Row 3" "Col 4"]
+                               
+                               :rows [[1 1 1 1 "D"]
+                                      [2 20 2 2 "B"]
+                                      [30 3 33 3 "C"]
+                                      [3 3 3 0 "A"]
+                                      ]}
 
+
+                              )
+     {:rows-selection [:ul {:li {:class "btnn"}}]}
+
+     ]))
 
 
 
@@ -388,6 +403,9 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
+
+
+
 (defn filter-view [{:keys [set/title set/subsets set/members] :as n} ]
   (let [my-atom (r/atom false)]
     (fn []
@@ -422,6 +440,118 @@ Be the dust at the Wise One's door, and speak!" }])
                   :set/subsets
                   [{:set/title "Sufi", :set/members [{:db/id 1}]}]}]}]
   )
+
+
+
+#_(def attr-query '[:find [(pull ?attributes
+                               [:set/title :set/members
+                                {:set/subsets ...}]) ...]
+                  :in $ ?type
+                  :where [?e :set/title ?type]
+                  [?e :set/attributes ?attributes]
+                  ])
+
+
+(deftrack state-via-pull [conn attr]
+  @(posh/q conn '[:find [?e ...]
+                  :in $ ?type
+                  :where [?e :set/title ?type]
+                  [?e :set/attributes ?attributes]]
+           attr))
+
+
+(def app-state (r/atom {:queries {2 {:id 2
+                                     :selected #{5}}
+                                  7 {:id 7
+                                     :selected #{ 9 }} }}))
+
+;; (get-in db [:queries t :selected]) (:db/id s)
+(defn filter-load [a conn db]
+  (let [x (posh/pull conn '[:set/title :db/id
+                            {:set/subsets ...
+                             :set/members ...}] a)
+        b (r/atom false)]
+    (fn [a conn db]
+      (let [t (:db/id @x)]
+        [:div
+         [:h1 (pr-str @db)]
+         [:h1 (:set/title @x)]
+         [:h1 (:db/id @x)]
+         (for [s (:set/subsets @x)]
+           [:div
+            [:button
+             {:on-click
+              #(swap! db update-in
+                     [:queries t :selected] disj (:db/id s))
+
+              }
+             "remove"]
+
+            [:button
+             {:on-click #(do
+                           (if ((get-in db [:queries t :selected] #{})
+                                (:db/id s))
+                             (js/alert "yo")
+                             (swap! db update-in
+                                    [:queries t :selected] (fnil conj #{}) (:db/id s))))}]]
+           )]
+
+        ))))
+
+
+(defn filter2 [conn db]
+  (let [qattrs
+        (posh/q conn '[:find [?attrs ...]
+                       :in $ ?type
+                       :where
+                       [?e :set/title ?type]
+                       [?e :set/attributes ?attrs]]
+                "Poem")]
+    (fn [conn db]
+      [:div
+       [:h1 (pr-str @qattrs)]
+       (for [a @qattrs]
+              ^{:key (pr-str a)}
+              [filter-load a conn db]
+
+              )]
+
+      )
+      )
+  )
+
+
+
+(defcard-rg ffff
+  [filter2 poem-conn app-state])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

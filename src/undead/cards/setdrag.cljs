@@ -1,22 +1,23 @@
 (ns undead.cards.setdrag
   (:require [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]] 
-            [reagent.core :as r]
+            [reagent.core :as reagent]
             [clojure.set :as set])
   (:require-macros
    [cljs.test :refer [is testing]]
    [devcards.core :refer [defcard-rg deftest]]))
 
-(defonce app-state (r/atom {:list (vec (take 11 "abcdefghijkl"))
+(defonce app-state (reagent/atom {:list (vec (take 11 "abcdefghijkl"))
                        :over -1
                        :dragging false}))
+
+
 
 (defn splice [x vctr pstn]
   (let [vctr (vec (filter #(not (= x %)) vctr))
         start (subvec vctr 0 pstn)
         end (subvec vctr pstn)]
     (vec (concat (conj start x)  end))))
-
 
 
 
@@ -48,7 +49,6 @@
         [placeholder (:dragging @s) v]
         [:li {:data-id i
               :draggable true
-   ;           :class-name "placeholder"
               :style {:display
                       (if (= v (:dragging @s))
                         "none"
@@ -68,17 +68,8 @@
               :on-drag-start (fn [e]
                                (swap! s assoc :dragging v
                                       :oldlist (:list @s)))
-              :on-drag-end (fn [e]
-                             #_(do
-                               (swap! s update :list (fn [l]
-                                                       (swap-in-vector
-                                                        l
-                                                        :placeholder
-                                                        (:dragging @s))))
-                               (swap! s assoc
-                                      :over false
-                                      :dragging false)))}
-         v]))) 
+              }
+         v])))
 
 
 
@@ -116,6 +107,16 @@
   app-state
   {:inspect-data true
    :history true})
+
+
+
+
+
+
+
+
+
+
 
 
 
