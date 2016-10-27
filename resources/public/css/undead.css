@@ -554,3 +554,12 @@ ul.todo-list {background-color: blue;
     border-left: 1px solid black;
     padding-left: 10px;
 }
+
+
+.poem {
+    width: 400px;
+    margin-left: 70px;
+    background-color: #1c1c1c;
+    color: grey;
+    border: 1px solid grey; 
+}

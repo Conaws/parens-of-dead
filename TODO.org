@@ -55,6 +55,7 @@ Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
        (is (= (d/q q1 parent-child-db simple-child [["Oct 1"]]) #{["A"]["B"]}))
        )))
  Link: file:~/src/side/parens-of-the-dead/src/undead/cards/search.cljs::(deftest%20queries2%0A%20(let%20%5B%0A%20q%20'%5B:find%20?p-names%0A%20:in%20$%20%25%0A%20:where%0A%20%5B?parents%20:title%20?p-names%5D%0A%20(child%20?parents%20?c)%5D%0A%0A%20q1%20'%5B:find%20?c-title%0A%20:in%20$%20%25%20$titles%0A%20:where%0A%20%5B$titles%20?parent-titles%5D%0A%20%5B?p%20:title%20?parent-titles%5D%0A%20(child%20?p%20?c)%0A%20%5B?c%20:title%20?c-title%5D%0A%20%5D%5D%0A%20(testing%20"qs"%0A%20(is%20(=%20(d/q%20q%20parent-child-db%20simple-child)%20#{%5B10%5D}))%0A%20(is%20(=%20(d/q%20q1%20parent-child-db%20simple-child%20%5B%5B"Oct%201"%5D%5D)%20#{%5B"A"%5D%5B"B"%5D}))%0A%20)))
+
 * log
 ** October 5, 2016
 *** 00:12:18

@@ -265,7 +265,7 @@ Be the dust at the Wise One's door, and speak!" }])
                   [:div.left-bblack
                    [:h1 title]
                    (for [a subsets]
-                     [demo-filter a])]))]))
+                     ^{:key a}[demo-filter a])]))]))
 
 
 
@@ -527,11 +527,11 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
-(defcard-rg fff
+#_(defcard-rg fff
   [filter2 poem-conn app-state])
 
 
-(defcard-rg ffffff
+#_(defcard-rg ffffff
   (fn []
     [:div.flex
      [filter2 poem-conn app-state]
@@ -619,7 +619,7 @@ Be the dust at the Wise One's door, and speak!" }])
     (is (= [] (select [sp/ATOM :queries ALL ALL (sp/must :selected) ] app-state)))))
 
 
-(defcard-rg ffff2
+#_(defcard-rg ffff2
   (fn []
     (let [filters (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state)
           poem-q (posh/q poem-conn '[:find [?e ...]
@@ -733,6 +733,13 @@ Be the dust at the Wise One's door, and speak!" }])
     )
   )
 
+(defn simple-poem [conn eid]
+  (let [poem (posh/pull conn '[:set/title :set/text] eid)]
+    [:div.poem
+     [:h1 (:set/title @poem)]
+     (:set/text @poem)]))
+
+
 (defcard-rg ffff3
   (fn []
     (let [filters (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state)
@@ -740,18 +747,20 @@ Be the dust at the Wise One's door, and speak!" }])
                                      :in $ ?type
                                      :where [?p :set/title ?type]
                                      [?p :set/members ?e]]
-                         "Poem")]
+                         "Poem")
+
+          poem-results (if (empty? filters)
+                         (set @poem-q)
+                         (apply set/intersection
+                                (set @poem-q)
+                                (map deref
+                                     (map
+                                      #(matching-or poem-conn %)
+                                      (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state)))))
+          ]
       [:div.flex
        [filter-3 poem-conn app-state]
-       [:div (pr-str
-              (if (empty? filters)
-                (set @poem-q)
-                (apply set/intersection
-                       (set @poem-q)
-                       (map deref
-                            (map
-                             #(matching-or poem-conn %)
-                             (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state))))))]
-       ])))
+       [:div (for [p  poem-results]
+               ^{:key p}[simple-poem poem-conn p])]])))
 
 
