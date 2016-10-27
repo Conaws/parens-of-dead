@@ -474,27 +474,23 @@ Be the dust at the Wise One's door, and speak!" }])
     (fn [a conn db]
       (let [t (:db/id @x)]
         [:div
-         [:h1 (pr-str @db)]
          [:h1 (:set/title @x)]
-         [:h1 (:db/id @x)]
-         (for [s (:set/subsets @x)]
-           [:div
-            [:button
-             {:on-click
-              #(swap! db update-in
-                     [:queries t :selected] disj (:db/id s))
-
-              }
-             "remove"]
-
-            [:button
-             {:on-click #(do
-                           (if ((get-in db [:queries t :selected] #{})
-                                (:db/id s))
-                             (js/alert "yo")
-                             (swap! db update-in
-                                    [:queries t :selected] (fnil conj #{}) (:db/id s))))}]]
-           )]
+         (doall (for [s (:set/subsets @x)
+                      :let [sid (:db/id s)
+                            included? (contains? (get-in @db [:queries t :selected]) sid)]]
+                  [rc/h-box
+                   :children [[:label (:set/title s)]
+                              
+                              [:input
+                               {:type "checkbox"
+                                :checked included?
+                                :on-click #(do
+                                             (if included?
+                                               (swap! db update-in
+                                                      [:queries t :selected] disj sid)
+                                               (swap! db update-in
+                                                      [:queries t :selected] (fnil conj #{}) (:db/id s))))}]]]
+                  ))]
 
         ))))
 
