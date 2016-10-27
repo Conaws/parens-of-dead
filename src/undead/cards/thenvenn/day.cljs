@@ -2,6 +2,7 @@
   (:require
    [goog.i18n.DateTimeFormat :as dtf]
    [posh.core :as posh :refer [posh!]]
+   [cljs-time.core :as time :refer [now]]
    [keybind.core :as keys]
    [cljs.pprint :refer [pprint]]
    [datascript.core :as d]
@@ -166,9 +167,29 @@ or a formatting string like \"dd MMMM yyyy\""
                     {:db/id -9
                      :set/title "Create"}
                     }}
+
+   {:db/id -10
+    :day/date (now)}
    ]
-
-
   )
+
+
+
+(deftest time-tst
+  (testing "time string"
+    (is (= [10 25 2016] ((juxt time/month time/day time/year) (time/today))))))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

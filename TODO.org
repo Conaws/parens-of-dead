@@ -652,7 +652,28 @@ So if consciousness is physical phenomena, simulations have huge disadvantages c
 subs 
 [(subs ?word 0 5) ?prefix]
 
+* October 26, 2016
 
+** Faceted Classification examples
+
+https://www.flickr.com/photos/morville/sets/72157603994869658/
+
+* October 27, 2016
+
+** 06:44:11
+
+:set/title "Type"
+
+
+
+:set/title "Creation"
+:set/prototype "Type"
+:set/attributes "Creator", "Created-at"
+
+
+:set/title "Poem"
+:set/prototype "Creation"
+:attribute/transformations {:attribute/original "Creator", :attribute/relabeled "Author"}
 
 
 
@@ -673,6 +694,7 @@ subs
 
 
     
+
 
 
 
