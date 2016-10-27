@@ -626,7 +626,7 @@ Be the dust at the Wise One's door, and speak!" }])
   (fn []
     [:div.flex
      [:div (str
-            (select [sp/ATOM :queries ALL ALL (sp/must :selected) ] app-state))]
+            (select [sp/ATOM :queries ALL ALL (sp/must :selected) (comp #(< 0 %) count )] app-state))]
      [filter22 poem-conn app-state]]))
 
 
