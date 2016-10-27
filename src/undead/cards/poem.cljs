@@ -7,12 +7,14 @@
    [keybind.core :as keys]
    [cljs.pprint :refer [pprint]]
    [datascript.core :as d]
+   [com.rpl.specter :as sp :refer [ALL MAP-VALS]]
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]]
    [clojure.set :as set]
    [re-com.core :as rc])
   (:require-macros
    [cljs.test  :refer [testing is]]
+   [com.rpl.specter.macros :refer [select]]
    [undead.subs :refer [deftrack]]
    [devcards.core
     :as dc
@@ -460,13 +462,102 @@ Be the dust at the Wise One's door, and speak!" }])
            attr))
 
 
-(def app-state (r/atom {:queries {2 {:id 2
+(defonce app-state (r/atom {:queries {2 {:id 2
+                                         :selected #{5}}
+                                      7 {:id 7
+                                         :selected #{ 9 }}}}))
+
+
+
+(defn filter-load [a conn db]
+  (let [x (posh/pull conn '[:set/title :db/id
+                            {:set/subsets ...
+                             :set/members ...}] a)]
+    (fn [a conn db]
+      (let [t (:db/id @x)]
+        [:div
+         (pr-str @db)
+         [:h1 (:set/title @x)]
+         (doall (for [s (:set/subsets @x)
+                      :let [sid (:db/id s)
+                            included? (contains? (get-in @db [:queries t :selected]) sid)]]
+                  ^{:key (str s)}[rc/h-box
+                                  :gap "10px"
+                                  :children [[:label (:set/title s)]
+                                             [:label (pr-str included?)]
+                                             [:button
+                                              {:on-click
+                                               #(do
+                                                 (if included?
+                                                   (swap! db update-in
+                                                          [:queries t :selected] disj sid)
+                                                   (swap! db update-in
+                                                          [:queries t :selected] (fnil conj #{}) (:db/id s))))}
+                                              (str included?)
+                                              ]
+                                             #_[:input
+                                              {:type "checkbox"
+                                               :checked included?
+                                               :read-only true
+                                               :on-click #(do
+                                                            (if included?
+                                                              (swap! db update-in
+                                                                     [:queries t :selected] disj sid)
+                                                              (swap! db update-in
+                                                                     [:queries t :selected] (fnil conj #{}) (:db/id s))))}]]]
+                  ))]
+
+        ))))
+
+
+(defn filter2 [conn db]
+  (let [qattrs
+        (posh/q conn '[:find [?attrs ...]
+                       :in $ ?type
+                       :where
+                       [?e :set/title ?type]
+                       [?e :set/attributes ?attrs]]
+                "Poem")]
+    (fn [db]
+      [:div
+       [:h1 (pr-str @qattrs)]
+       (for [a @qattrs]
+              ^{:key (pr-str a)}
+              [filter-load a conn db]
+
+              )])))
+
+
+
+(defcard-rg fff
+  [filter2 poem-conn app-state])
+
+
+(defcard-rg ffffff
+  (fn []
+    [:div.flex
+     [filter2 poem-conn app-state]
+     [:div 
+      (pr-str (query-from-state app-state))]]))
+
+
+
+
+
+
+
+
+
+
+
+
+(def app-state2 (r/atom {:queries {2 {:id 2
                                      :selected #{5}}
                                   7 {:id 7
                                      :selected #{ 9 }} }}))
 
 ;; (get-in db [:queries t :selected]) (:db/id s)
-(defn filter-load [a conn db]
+(defn filter-load2 [a conn db]
   (let [x (posh/pull conn '[:set/title :db/id
                             {:set/subsets ...
                              :set/members ...}] a)
@@ -480,7 +571,6 @@ Be the dust at the Wise One's door, and speak!" }])
                             included? (contains? (get-in @db [:queries t :selected]) sid)]]
                   [rc/h-box
                    :children [[:label (:set/title s)]
-                              
                               [:input
                                {:type "checkbox"
                                 :checked included?
@@ -495,7 +585,7 @@ Be the dust at the Wise One's door, and speak!" }])
         ))))
 
 
-(defn filter2 [conn db]
+(defn filter22 [conn db]
   (let [qattrs
         (posh/q conn '[:find [?attrs ...]
                        :in $ ?type
@@ -508,7 +598,7 @@ Be the dust at the Wise One's door, and speak!" }])
        [:h1 (pr-str @qattrs)]
        (for [a @qattrs]
               ^{:key (pr-str a)}
-              [filter-load a conn db]
+              [filter-load2 a conn db]
 
               )]
 
@@ -518,23 +608,26 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
-(defcard-rg ffff
-  [filter2 poem-conn app-state])
+(deftrack query-from-state2 [conn db]
+  (let [qs (:queries db)
+        active-qs (filter (comp #(< 0 %) count :selected) qs)
+        ]
+    @(apply intersection
+            (for [a (map :selected active-qs)]
+              (matching-or conn a)))))
 
 
+(deftest specter
+  (testing "stuff"
+    (is (= [] (select [sp/ATOM :queries ALL ALL (sp/must :selected) ] app-state)))))
 
 
-
-
-
-
-
-
-
-
-
-
-
+(defcard-rg ffff2
+  (fn []
+    [:div.flex
+     [:div (str
+            (select [sp/ATOM :queries ALL ALL (sp/must :selected) ] app-state))]
+     [filter22 poem-conn app-state]]))
 
 
 
