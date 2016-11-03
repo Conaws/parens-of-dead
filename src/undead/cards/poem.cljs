@@ -878,6 +878,41 @@ Be the dust at the Wise One's door, and speak!" }])
                         :set/_subsets theme-id}])))
 
 
+(defn subset-builder [conn map-atom selections root]
+  (map (fn [v] (get @map-atom v
+                   (transaction->eid
+                    (transact-root
+                     conn
+                     v
+                     root))
+                   )) @selections))
+
+
+
+(defn find-or-create-subset [conn root v]
+  (or (d/q '[:find ?e .
+             :in $ % ?title ?root
+             :where
+             [?e :set/title ?title]
+             (member ?r ?e)
+             [?r :set/title ?root]]
+           @conn
+           subset-only-rule
+           v
+           root)
+      (transaction->eid
+       (transact-root
+        conn
+        v
+        root))))
+
+(deftest find-or-create-test
+  (testing "aaa"
+    (is (= 17 (find-or-create-subset poem-conn "Culture" "Irish")))
+    (is (= 21 (find-or-create-subset poem-conn "Culture" "Hindu"))))
+  )
+
+
 (defcard-rg culture-multisimple
   (let [theme-selections (r/atom [])
         theme-map (title-map poem-conn "Theme")
@@ -895,72 +930,105 @@ Be the dust at the Wise One's door, and speak!" }])
                      :selections theme-selections
                      :on-delete #(swap! theme-selections pop)
                      :save! #(swap! theme-selections conj %)}]
-                   [:button {:on-click #(js/alert (map (fn [v] (get @theme-map v
-                                                                   (transaction->eid
-                                                                    (transact-root
-                                                                     poem-conn
-                                                                     v
-                                                                     "Theme")) 
-                                                                   )) @theme-selections))}
+                   [:button {:on-click #(js/alert
+                                         (map (partial find-or-create-subset
+                                                poem-conn
+                                                "Theme")                                       @theme-selections))}
                     "test"]]]
        ])))
 
 
 
 (defcard-rg culture-multis
-  (let [culture-selections (r/atom [])
-        culture-options (posh/q poem-conn '[:find [?title ...]
-                                    :in $ % ?parent
-                                    :where [?p :set/title ?parent]
-                                    (member ?p ?e)
-                                    [?e :set/title ?title]]
-                        subset-only-rule
-                        "Culture"
-                        )
+  (let [poem-id (:db/id (find-by @poem-conn :set/title "Poem"))
+        culture-selections (r/atom [])
+        culture-options (title-subset-q poem-conn "Culture")
         theme-selections (r/atom [])
-        theme-options (posh/q poem-conn '[:find [?title ...]
-                                    :in $ % ?parent
-                                    :where [?p :set/title ?parent]
-                                    (member ?p ?e)
-                                    [?e :set/title ?title]]
-                        subset-only-rule
-                        "Theme"
-                        )
+        theme-options (title-subset-q poem-conn  "Theme")
+        author-selections (r/atom [])
+        author-options (title-subset-q poem-conn "Author")
         text-body (r/atom "")
         text-title (r/atom "")]
     (fn []
-      [:div
-       [:input {:value @text-title
-                :placeholder "Poem Title"
-                :on-change #(reset! text-title (-> % .-target .-value))}]
+      (let [subsets #(concat
+                     [poem-id]
+                     (map (partial find-or-create-subset
+                                   poem-conn
+                                   "Theme")
+                          @theme-selections)
+                     (map (partial find-or-create-subset
+                                   poem-conn
+                                   "Culture")
+                          @culture-selections)
+                     (map (partial find-or-create-subset
+                                   poem-conn
+                                   "Author")
+                          @author-selections))]
+        [:div
+         [:input {:value @text-title
+                  :placeholder "Poem Title"
+                  :on-change #(reset! text-title (-> % .-target .-value))}]
 
-       [:textarea {:value @text-body
-                   :on-change #(reset! text-body (-> % .-target .-value))
-                   :placeholder "Poem Body"}]
-       
-       [rc/v-box
-        :gap "10px"
-        :children [[multi/multi
-                    {:highlight-class "highlight"
-                     :options @culture-options
-                     :placeholder "Culture"
-                     :selections culture-selections
-                     :on-delete #(swap! culture-selections pop)
-                     :save! #(swap! culture-selections conj %)}]
-                   [multi/multi
-                    {:highlight-class "highlight"
-                     :options @theme-options
-                     :placeholder "Theme"
-                     :selections theme-selections
-                     :on-delete #(swap! theme-selections pop)
-                     :save! #(swap! theme-selections conj %)} 
-                    ]]]
-       [:button {:on-click #(d/transact! poem-conn
-                                         [{:db/id -1
-                                           :set/title @text-title
-                                           :set/text @text-body
-                                           :set/_members (concat @theme-selections
-                                                                 @culture-selections)
-                                           }]
-                                         )}]
-       ])))
+         [:textarea {:value @text-body
+                     :on-change #(reset! text-body (-> % .-target .-value))
+                     :placeholder "Poem Body"}]
+         [rc/v-box
+          :gap "10px"
+          :children [[multi/multi
+                      {:highlight-class "highlight"
+                       :options @culture-options
+                       :placeholder "Culture"
+                       :selections culture-selections
+                       :on-delete #(swap! culture-selections pop)
+                       :save! #(swap! culture-selections conj %)}]
+                     [multi/multi
+                      {:highlight-class "highlight"
+                       :options @theme-options
+                       :placeholder "Theme"
+                       :selections theme-selections
+                       :on-delete #(swap! theme-selections pop)
+                       :save! #(swap! theme-selections conj %)} 
+                      ]
+                     [multi/multi
+                      {:highlight-class "highlight"
+                       :options @author-options
+                       :placeholder "Author"
+                       :selections author-selections
+                       :on-delete #(swap! author-selections pop)
+                       :save! #(swap! author-selections conj %)} 
+                      ]]]
+         [:button {:on-click #(do
+                                (d/transact! poem-conn
+                                               [{:db/id -1
+                                                 :set/title @text-title
+                                                 :set/text @text-body
+                                                 :set/_members (subsets)
+                                                 }]
+                                               ))}]
+         ]))))
+
+(let [poem-id (:db/id (find-by @poem-conn :set/title "Poem"))]
+  (d/transact! poem-conn [{:db/id -1 :set/title "New Poem"
+                           :set/text "heeeyyykj"
+                           :set/_members [poem-id]}]))
+
+(defn all-poems [conn]
+  (posh/q conn '[:find [(pull ?e [*]) ...]
+            :in $ %
+            :where [?p :set/title "Poem"]
+            (member ?p ?e)]
+          subset-rule
+          )
+  )
+
+
+
+(defcard-rg all-poems
+  (let [es (all-poems poem-conn)]
+    (fn []
+      [:ol 
+       (for [e @es]
+         ^{:key e}[:li (pr-str e)])]))
+
+  )
+
