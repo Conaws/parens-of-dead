@@ -751,36 +751,44 @@ now.. this is pretttyyy gnarly in some ways, quite low level
 but... that has tradeoffs good and bad --- what is droppable?
 
 * November 3, 2016
+** Flight
 
-** 14:36:23 -- 15:35:37 takeoff + nap
 
-** 15:35:47 -- 15:43:37 - got a basic options off of multi-select working
+*** 14:36:23 -- 15:35:37 takeoff + nap
 
-** 16:19:43 -- 19:28:07  meal time + nap 
+*** 15:35:47 -- 15:43:37 - got a basic options off of multi-select working
+
+*** 16:19:43 -- 19:28:07  meal time + nap 
 woke up feeling much warmer, sleep might have helped prevent me from coming down with something
 
-** 19:38:09 -- 20:13:53
+*** 19:38:09 -- 20:13:53
 got a placeholder image loaded
 setup a basic poem form 
 it will need to be refactored a bunch
 to handle variable number of attributes 
 and to handle ids instead of just titles
 
-** -- 20:48:03 -- 21:03:06
+*** -- 20:48:03 -- 21:03:06
 making a hashmap between titles and eids 
 could be used for constucting the transaction
 
-** 21:03:10 -- 21:26:01
+*** 21:03:10 -- 21:26:01
 
 Using the theme-map for grabbing the right EID for a transaction, but still need to create the 
 ones that aren't there
 
 I think I got it transacting -- sorta
 
-** 21:26:16  -- 22:10:57
+*** 21:26:16  -- 22:10:57
 break and some wor
 
-** nother break
+*** -- 22:47:57
+another short break, then used find-or-create to create new themes and culture within poem
+
+** Dulles Airport
+
+
+
 
 
 
