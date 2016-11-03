@@ -948,7 +948,6 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
-
 (defn multis [hidden]
   (let [poem-id (:db/id (find-by @poem-conn :set/title "Poem"))
         culture-selections (r/atom [])
@@ -958,8 +957,7 @@ Be the dust at the Wise One's door, and speak!" }])
         author-selections (r/atom [])
         author-options (title-subset-q poem-conn "Author")
         text-body (r/atom "")
-        text-title (r/atom "")
-        ]
+        text-title (r/atom "")]
     (fn [hidden]
       (if @hidden
         [:button {:on-click #(reset! hidden false)} "Show the modal"]
@@ -1023,13 +1021,12 @@ Be the dust at the Wise One's door, and speak!" }])
                                                        )
                                           (reset! text-title "")
                                           (reset! text-body "")
-                                          (reset! hidden true)
-                                          )
-                                        
-                                        )}
-                  "Save Poem"
-                  ]
-                 ]]))))
+                                          (reset! hidden true)))}
+                  "Save Poem"]]]))))
+
+
+
+
 
 
 (deftest concat-test

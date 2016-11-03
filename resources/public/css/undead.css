@@ -563,3 +563,14 @@ ul.todo-list {background-color: blue;
     color: grey;
     border: 1px solid grey; 
 }
+
+#bso .y {
+    background-color: blue;
+    overflow: none;
+    border: 2px solid black;
+    height: 50px;
+    width: 150px;
+    margin: 50px 0px;
+    padding: 50px;
+    transform: rotate(-90deg);
+}

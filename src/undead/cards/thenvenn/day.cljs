@@ -2,6 +2,7 @@
   (:require
    [goog.i18n.DateTimeFormat :as dtf]
    [posh.core :as posh :refer [posh!]]
+   [re-com.core :as rc]
    [cljs-time.core :as time :refer [now]]
    [keybind.core :as keys]
    [cljs.pprint :refer [pprint]]
@@ -180,13 +181,51 @@ or a formatting string like \"dd MMMM yyyy\""
     (is (= [10 25 2016] ((juxt time/month time/day time/year) (time/today))))))
 
 
+#_(defn slider [attr conn id]
+  (let [itm (pull conn '[*] id)]
+    (fn [attr conn id]
+      [:div
+       [:input {:type "range"
+                :style {:display "flex"}
+                :name "start"
+                :value (get @itm attr 0)
+                :min 0
+                :max 100
+                :step 1
+                :on-change (fn [e]
+                             (do #_(js/alert
+                                    (js/parseInt (-> e .-target .-value)))
+                                 (d/transact! conn [{:db/id id attr
+                                                     (js/parseInt (-> e .-target .-value))}])))}]])))
+
+(defn block-input []
+  (let [block-number (r/atom 1)]
+    (fn []
+      [:div#bso.flex
+       [:div.y.flex
+        [:input {:type "range"
+                 :style {:display "flex"}
+                 :name "start"
+                 :value @block-number
+                 :min 0
+                 :max 100
+                 :step 1
+                 :on-change (fn [e]
+                              (reset! block-number
+                                      (js/parseInt (-> e .-target .-value))))}]] 
+       [:div
+        [:div (for [i (partition-all 10 (range @block-number))]
+                ^{:key i}[:div (for [x i]
+                                 ^{:key x}[:button x])])]]
+       ])
+    )
+  )
 
 
 
 
-
-
-
+(defcard-rg bblockk
+  [block-input])
 
 
 

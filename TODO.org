@@ -787,6 +787,18 @@ another short break, then used find-or-create to create new themes and culture w
 
 ** Dulles Airport
 
+*** 16:39:10
+got a full faceted input working
+
+now need to style it
+
+** flight 16:39:45
+
+*** next stage on poem stuff would be to refactor so can have variable # of facets
+
+*** 16:42:28
+for now, will jump to vennthenn
+
 
 
 
