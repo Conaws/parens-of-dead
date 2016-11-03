@@ -833,17 +833,134 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
+(deftrack title-map [conn root]
+  (apply hash-map @(posh/q conn '[:find [?title ?e]
+                                      :in $ % ?parent
+                                      :where [?p :set/title ?parent]
+                                      (member ?p ?e)
+                                      [?e :set/title ?title]]
+                          subset-only-rule
+                          root
+                          )))
+
+(def title-subset-title '[:find [?title ...]
+                         :in $ % ?parent
+                         :where [?p :set/title ?parent]
+                         (member ?p ?e)
+                         [?e :set/title ?title]])
+
+(defn title-subset-q [conn root]
+  (posh/q conn
+          title-subset-title
+          subset-only-rule
+          root))
+
+(defn transaction->eid [tx]
+                  (-> tx
+                      :tempids
+                      first
+                      second))
+
+(deftest mapmaking
+  (testing "turn vectors into map"
+    (is (= {:a "b"} (apply hash-map [:a "b"])))
+    )
+  (testing "return from transaction"
+    (is (integer? (transaction->eid (d/transact! poem-conn [{:db/id -1 :set/title "New Title"}]))))
+  ))
+
+
+
+(defn transact-root [conn v root]
+  (let [theme-id (:db/id (find-by @conn :set/title root))]
+    (d/transact! conn [{:db/id -1
+                        :set/title v
+                        :set/_subsets theme-id}])))
+
+
+(defcard-rg culture-multisimple
+  (let [theme-selections (r/atom [])
+        theme-map (title-map poem-conn "Theme")
+        theme-options (title-subset-q poem-conn "Theme")]
+    (fn []
+      [:div
+       (pr-str (apply hash-map @theme-map))
+       [rc/v-box
+        :gap "10px"
+        :children [
+                   [multi/multi
+                    {:highlight-class "highlight"
+                     :options @theme-options
+                     :placeholder "Theme"
+                     :selections theme-selections
+                     :on-delete #(swap! theme-selections pop)
+                     :save! #(swap! theme-selections conj %)}]
+                   [:button {:on-click #(js/alert (map (fn [v] (get @theme-map v
+                                                                   (transaction->eid
+                                                                    (transact-root
+                                                                     poem-conn
+                                                                     v
+                                                                     "Theme")) 
+                                                                   )) @theme-selections))}
+                    "test"]]]
+       ])))
+
+
+
 (defcard-rg culture-multis
-  (let [options (posh/q poem-conn '[:find [?title ...]
+  (let [culture-selections (r/atom [])
+        culture-options (posh/q poem-conn '[:find [?title ...]
                                     :in $ % ?parent
                                     :where [?p :set/title ?parent]
                                     (member ?p ?e)
                                     [?e :set/title ?title]]
                         subset-only-rule
                         "Culture"
-                        ) ]
-    [multi/multi
-     {:highlight-class "highlight"
-      :options @options}
-     ])
-  )
+                        )
+        theme-selections (r/atom [])
+        theme-options (posh/q poem-conn '[:find [?title ...]
+                                    :in $ % ?parent
+                                    :where [?p :set/title ?parent]
+                                    (member ?p ?e)
+                                    [?e :set/title ?title]]
+                        subset-only-rule
+                        "Theme"
+                        )
+        text-body (r/atom "")
+        text-title (r/atom "")]
+    (fn []
+      [:div
+       [:input {:value @text-title
+                :placeholder "Poem Title"
+                :on-change #(reset! text-title (-> % .-target .-value))}]
+
+       [:textarea {:value @text-body
+                   :on-change #(reset! text-body (-> % .-target .-value))
+                   :placeholder "Poem Body"}]
+       
+       [rc/v-box
+        :gap "10px"
+        :children [[multi/multi
+                    {:highlight-class "highlight"
+                     :options @culture-options
+                     :placeholder "Culture"
+                     :selections culture-selections
+                     :on-delete #(swap! culture-selections pop)
+                     :save! #(swap! culture-selections conj %)}]
+                   [multi/multi
+                    {:highlight-class "highlight"
+                     :options @theme-options
+                     :placeholder "Theme"
+                     :selections theme-selections
+                     :on-delete #(swap! theme-selections pop)
+                     :save! #(swap! theme-selections conj %)} 
+                    ]]]
+       [:button {:on-click #(d/transact! poem-conn
+                                         [{:db/id -1
+                                           :set/title @text-title
+                                           :set/text @text-body
+                                           :set/_members (concat @theme-selections
+                                                                 @culture-selections)
+                                           }]
+                                         )}]
+       ])))

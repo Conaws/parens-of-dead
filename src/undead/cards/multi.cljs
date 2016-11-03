@@ -58,18 +58,15 @@
 
 
 
-(defn multi [{:keys [highlight-class item-class list-class options]}]
+(defn multi [{:keys [highlight-class placeholder item-class list-class options
+         save! selections on-delete]}]
   (let [a (r/atom "")
         selected-index (r/atom -1)
         typeahead-hidden? (r/atom false)
         mouse-on-list? (r/atom false)
-        selections (r/atom [])
-        
-        save! #(swap! selections conj %)
         ]
     (fn []
-      (let [delete! #(if (clojure.string/blank? @a)
-                       (swap! selections pop))
+      (let [ 
             options  (if (clojure.string/blank? @a)
                        []
                        (filter
@@ -97,6 +94,8 @@
               ))
           [:input.tags-input
            {:value @a
+            :placeholder placeholder
+            ;; (if (empty? @selections ) placeholder nil)
             :on-change #(reset! a (-> % .-target .-value))
             :on-key-down #(do
                             (case (.-which %)
@@ -110,7 +109,8 @@
                                      (swap! selected-index inc)))
                               9  (choose-selected)
                               13 (choose-selected)
-                              8 (delete!)
+                              8  (when (clojure.string/blank? @a)
+                                   (on-delete))
                               27 (do #_(reset! typeahead-hidden? true)
                                      (reset! selected-index -1))
                               "default"))}]
@@ -136,9 +136,15 @@
              matching-options))]]])
        )))
 
+
+
 (defcard-rg tags-example
-  [multi {:highlight-class "highlight"
-          :options ["Reagent""Re-frame""Re-com""Reaction"]}]
+  (let [selections (r/atom ["A" "B" "Conor Rules"])]
+    [multi {:highlight-class "highlight"
+            :selections selections
+            :on-delete #(swap! selections pop)
+            :save! #(swap! selections conj %) 
+            :options ["Reagent""Re-frame""Re-com""Reaction"]}])
   )
 
 
