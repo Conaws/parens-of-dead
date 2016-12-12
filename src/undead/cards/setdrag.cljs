@@ -2,6 +2,7 @@
   (:require [datascript.core :as d]
             [posh.core :as posh :refer [posh! pull q]] 
             [reagent.core :as reagent]
+            [cljs.spec :as s]
             [clojure.set :as set])
   (:require-macros
    [cljs.test :refer [is testing]]
@@ -42,6 +43,20 @@
       (replace-v a b)
     ))
 
+(deftest vectest
+  (testing "assoc"
+    (is (= 0 (.indexOf [1 2] 1)))
+    (is (= 1 (get [1 2] 0)))
+    (is (= [0 2] (replace-v [1 2] 1 0)))
+    (is (= [0 2 1] (swap-in-vector [:boom 2 1 0] :boom 0)))
+    (is (= [3 1 2] (splice 3 [1 2] 0)))
+    (is (= [3 1 2] (splice 3 [1 2] 0)))
+    (is (= [1 2 99] (assoc [1 2] 2 99) ))))
+
+
+
+
+
 
 (defn listitem [i v s]
     (fn [i v s]
@@ -58,7 +73,7 @@
                       :margin "5px"
                       :opacity
                       (if (:dragging @s)
-                        "0.9"
+                        "0.5"
                         "1")}
               :on-drag-enter (fn [e]
                                (swap! s update :list (fn [l]
@@ -72,21 +87,12 @@
          v])))
 
 
+(s/def ::items (s/coll-of string?))
 
-
-(deftest vectest
-  (testing "assoc"
-    (is (= 0 (.indexOf [1 2] 1)))
-    (is (= 1 (get [1 2] 0)))
-    (is (= [0 2] (replace-v [1 2] 1 0)))
-    (is (= [0 2 1] (swap-in-vector [:boom 2 1 0] :boom 0)))
-    (is (= [3 1 2] (splice 3 [1 2] 0)))
-    (is (= [3 1 2] (splice 3 [1 2] 0)))
-    (is (= [1 2 99] (assoc [1 2] 2 99) ))))
-
-
-
-(defn list-render [s]
+(defn list-render [{:keys [items]}]
+  (let [state (reagent/atom {:list items
+                             :over -1
+                             :dragging false})])
     (fn [s]
       [:ol {:style {:border "2px solid blue"}
             :on-drag-end  (fn [e]

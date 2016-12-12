@@ -6,6 +6,7 @@
    [cljs-time.core :as time :refer [now]]
    [keybind.core :as keys]
    [cljs.pprint :refer [pprint]]
+   [undead.cards.multi :as multi]
    [datascript.core :as d]
    [com.rpl.specter :as sp :refer [ALL MAP-VALS]]
    [reagent.core :as r]
@@ -213,10 +214,6 @@ Be the dust at the Wise One's door, and speak!" }])
 
 
 
-
-
-
-
 (defn demo-filter [{:keys [set/title set/subsets set/members] :as n} ]
   (let [my-atom (r/atom false)]
     (fn []
@@ -328,6 +325,9 @@ Be the dust at the Wise One's door, and speak!" }])
                   ["Poem"])
              )
           ))))
+
+
+
 
 
 (deftrack matching-or
@@ -735,9 +735,10 @@ Be the dust at the Wise One's door, and speak!" }])
 
 (defn simple-poem [conn eid]
   (let [poem (posh/pull conn '[:set/title :set/text] eid)]
-    [:div.poem
-     [:h1 (:set/title @poem)]
-     (:set/text @poem)]))
+    (fn []
+      [:div.poem
+       [:h1 (:set/title @poem)]
+       (:set/text @poem)])))
 
 
 (defcard-rg ffff3
@@ -764,3 +765,85 @@ Be the dust at the Wise One's door, and speak!" }])
                ^{:key p}[simple-poem poem-conn p])]])))
 
 
+
+(defn qe
+  "Returns the single entity returned by a query."
+  [query db & args]
+  (when-let [result (-> (apply d/q query db args) ffirst)]
+    (d/entity db result)))
+
+(defn find-by
+  "Returns the unique entity identified by attr and val."
+  [db attr val]
+  (qe '[:find ?e
+        :in $ ?attr ?val
+        :where  [?e ?attr ?val]]
+      db attr val))
+
+
+
+
+(defn subset-member-q
+  "takes a eid, returns eids"
+  [conn top]
+  (posh/q conn '[:find [?e ...]
+                 :in $ % ?topeid
+                 :where (member ?topeid ?e)
+                 ]
+          subset-rule
+          top))
+
+(def subset-only-rule
+  '[[(member ?p ?e)
+     [?p :set/subsets ?e]]
+    [(member ?p ?e)
+     [?p :set/subsets ?p1]
+     (member ?p1 ?e)]
+    ])
+
+
+(defn subset-q
+  "takes a eid, returns eids"
+  [conn top]
+  (posh/q conn '[:find [?e ...]
+                 :in $ % ?topeid
+                 :where (member ?topeid ?e)
+                 ]
+          subset-only-rule
+          top))
+
+(defn get-attrs [conn attr eids]
+  (posh/q conn '[:find ?a
+                 :in $ ?attr [?eid ...]
+                 :where [?eid ?attr ?a]]
+          attr
+          eids))
+
+
+(deftest subsest-q-test
+  (testing "poem-conn queries"
+    (let [culture-stuff (subset-q
+                         poem-conn
+                         (:db/id
+                          (find-by @poem-conn :set/title "Culture")))]
+
+      (is (= "" @culture-stuff))
+      (is (= "" (get-attrs poem-conn :set/title @culture-stuff))))))
+
+
+
+
+(defcard-rg culture-multis
+  (let [options (posh/q poem-conn '[:find [?title ...]
+                                    :in $ % ?parent
+                                    :where [?p :set/title ?parent]
+                                    (member ?p ?e)
+                                    [?e :set/title ?title]]
+                        subset-only-rule
+                        "Culture"
+                        ) ]
+    [multi/multi
+     {:highlight-class "highlight"
+      :options @options}
+     ])
+  )

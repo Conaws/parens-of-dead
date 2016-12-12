@@ -1,0 +1,33 @@
+
+
+* From October 30, 2016
+
+In this example  [[file:~/Dropbox/notesy/Carver%20Mead.txt::*Alternate%20world%20view][Nature of Light]], I'm clearly seeing two things
+
+** Problem One: Non-Hungry Collapse
+
+First -- that the problem I have with Org-Modes way of handling layout is that I don't like how -- when I want to break into a subgroup -- I can't ever return to the parent group 
+
+basically, if I Indent below
+
+*** such as with this indent
+
+I can put examples in here
+
+but there is not longer any way that I can continue my train of thought from above...
+
+*** Why this is a feature not a bug..
+
+It means that I don't have signal in any way when I want to return to the parent -- it just can't happen.  So there isn't a signal for ending the fold
+
+** Feature One : Radio Links
+
+Nice aspect of radio-links, is that if you want to get rid of one in org-mode, it is as simple as just deleting the radio-link and then reloading the page
+
+
+
+
+
+
+
+ 

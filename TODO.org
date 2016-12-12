@@ -750,6 +750,21 @@ https://github.com/borkdude/draggable-button-in-reagent/blob/master/src-cljs/dra
 now.. this is pretttyyy gnarly in some ways, quite low level
 but... that has tradeoffs good and bad --- what is droppable?
 
+* November 3, 2016
+
+** 14:36:23 -- 15:35:37 takeoff
+
+** 15:35:47 -- 15:43:37 - got a basic options off of multi-select working
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -761,6 +776,10 @@ but... that has tradeoffs good and bad --- what is droppable?
 
 
     
+
+
+
+
 
 
 

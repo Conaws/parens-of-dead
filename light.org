@@ -1,0 +1,123 @@
+
+
+
+* The Nature of Light
+
+** Present World View
+
+*** Time has a preferred direction
+
+*** Isolated experiments are the key to fundamental physical qualities
+
+*** Space-Time has degrees of freedom all its own
+
+*** Matter and fields are particulate in nature
+
+*** The most fundamental constructs in physics are particles manifest in high energy experiments. These fundamental elements are point particles
+
+*** Mathematical elegence is the most important attribute of a theory
+
+*** The mathematics of a theory constitute the entire theory
+
+*** It is not necessary for a thoery to enable conceptual reasoning
+
+*** It is acceptable for a theory to be logically inconsistent
+
+*** Theory often predicts new physical phenomena
+
+*** The sucesses in technological enterprise are attributable to current theoretical understanding.
+
+** Alternate world view
+
+#+BEGIN_QUOTE
+[[file:~/src/side/parens-of-the-dead/Features.org::*From%20October%2030,%202016][meta]]
+
+#+END_QUOTE
+
+
+The physical world as we observe it can be much more simply and elegantly understood using a different set of assumptions
+
+*** The must fundamental constructs in physics are the electromagnetic and gravitational interactions of matter
+
+*** Time enters these fundamental physical interactions in a totally symmetric way.  The apparent preferred direction of time is thermodynamic in origin.
+
+*** Every element of matter is coupled to all other matter on its light cone by time-symmetric interactions.
+
+*** Matter interacts directly with other matter. 
+The time-symmetric nature of these interactions make them effectively instantaneous
+
+*** The properties of matter (see below) are manifestations of these interactions.  There is no such thing as an isolated experiment.
++ Rest Energy
++ Interia
++ Radiation Reaction
++ Spontaneous Emission
+
+*** Fields have no degrees of freedom of their own
+They are simply bookkeeping mechanisms for the direct interaction of matter with other matter
+
+*** Space-Time has no degrees of freedom of its own
+It is simply a coordinate system within which we can express natural law
+
+*** Matter is, at the fundamental level, wavelike in nature. 
+There is no such thing as a point particle. Quantization of matter is due to the formation of bound states of matter wave functions
+
+*** Quantization of quantum transition energies is due to the discreteness of these bound matter states
+The fields themselves are simply a representation of matter interactions.
+The confer no additional constraints on those interactions.
+
+*** A "photon" can be best viewed as a transaction between two atoms on the same light cone.
+Such a transaction requires an exquisite degree of phase matching between the quantum states of the two coupled atoms, and is therefore a rare event.
+Photon statistics result from the chance correlations of atomic wave function phases.
+
+*** The "photon" transaction can be viewed as a brief entanglement of the quantum states of the two participating atoms.
+
+*** The transaction is itself a completely continuous process.
+When the transaction is initiated, it grows exponentially with time. This highly nonlinear evolution gives the appearance of an abrupt "quantum jump" as the atomic wave functions "collapse".
+
+*** The observed particulate "photon" behavior is not due to the nature of fields, but is a manifestation of entropy, related to the thermodynamic arrow of time.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* Vocab
+
+#+BEGIN_QUOTE
+
+For reverse-search (to see where each of these words is used), use <SPC s j>
+That'll show the selection and the heading
+Or even better, use <Spc s s> or <spc s S> to jump
+
+#+END_QUOTE
+
+
+** <<<fundamental physical qualities>>>
+** <<<Space-Time>>>
+** <<<particulate>>>
+** <<<point particle>>>
+** <<<light cone>>>
+** <<<coupled>>>
+** <<<Rest Energy>>>
+** <<<Interia>>>
+** <<<Radiation Reaction>>>
+** <<<Spontaneous Emission>>>
+** <<<Fields>>>
+** <<<degrees of freedom>>>
+** <<<bound states of matter wave functions>>>
+
+<<<bound matter states>>>
+** <<<quantum transition energies>>>
+** <<<phase matching>>>
+
+

@@ -4,6 +4,7 @@
    [cljs.pprint :refer [pprint]]
    [re-com.core :as rc :refer [v-box box input-text h-box]]
    [datascript.core :as d]
+   [clojure.string :as str]
    [reagent-forms.core :refer [bind-fields]]
    [reagent.core :as r]
    [re-frame.core :refer [subscribe dispatch]])
@@ -62,7 +63,7 @@
         selected-index (r/atom -1)
         typeahead-hidden? (r/atom false)
         mouse-on-list? (r/atom false)
-        selections (r/atom ["A" "B"])
+        selections (r/atom [])
         
         save! #(swap! selections conj %)
         ]
@@ -72,7 +73,7 @@
             options  (if (clojure.string/blank? @a)
                        []
                        (filter
-                        #(-> % (.toLowerCase %) (.indexOf @a) (> -1))
+                        #(-> % (.toLowerCase %) (.indexOf (.toLowerCase @a)) (> -1))
                         options))
             matching-options (filter (comp not (set @selections)) options)
             choose-selected #(if (and (not-empty matching-options)
