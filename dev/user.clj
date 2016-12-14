@@ -41,4 +41,63 @@
 
 
 
+;;; factorials
+
+(
+ (fn [x]
+   (apply * (range 1 (inc x)))
+   )
+ 5)
+
+
+;;interleave two seqs
+((fn [x y]
+   (let [
+         b (into {} (map-indexed vector y))
+         ]
+     (flatten (take-while (comp not nil?) (for [[n a] (map-indexed vector x)
+                                      :let [y (get b n)]]
+                                  (if y
+                                    [a y])
+                                  )))
+
+     )
+
+   )
+
+ [1 2 3 4]
+ [5]
+ )
+
+((fn [x y]
+   (first x)
+   )
+
+ [1 2 3 4]
+ [5]
+ )
+
+;; interpose a sequence
+((fn [x xs]
+   (drop-last (flatten  (for [a xs]
+                         [a x])))
+
+   )
+
+0
+  [1 2 3]
+  
+ )
+;;; (fn [x s] (butlast (mapcat #(list % x) s)))
+
+;;; (fn [d s] (rest (mapcat #(list d %) s)))
+
+;; better solution
+(#(drop-last (interleave %2 (repeat %1)))
+ 0
+ [1 2 3])
+
+
+
+
 
