@@ -101,3 +101,51 @@
 ;; better solution -- (juxt take drop)
 
 
+(= (set ((fn [x]
+           (vals (group-by type x))
+           )
+         [1 :a 2 :b 3 :c])
+
+
+
+        ) #{[1 2 3] [:a :b :c]})
+
+
+((fn [& s]
+   (true? (and (some true? s)
+              (not (every? true? s)))))
+
+ false
+ false 
+ )
+
+;; alternatives are
+;; (fn [s]
+;; (and (boolean (some true? s))   (not-every? true? s ) ))
+
+
+;; simplest was not=
+
+
+
+;;flipping out
+(fn [my-fn] 
+  (fn [& args]
+    (apply my-fn (reverse args))))
+
+;; using comp #(comp (partial apply %) reverse list)
+
+(fn [f]
+  (comp (partial apply f) reverse list))
+
+
+
+(hash-map :a :b :c :d)
+
+;; create zipmap
+((fn [a b]
+   (apply hash-map (interleave a b)))
+
+
+[1 2 3]
+ [:a :b :c])
