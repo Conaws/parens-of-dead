@@ -59,35 +59,20 @@
                                       :let [y (get b n)]]
                                   (if y
                                     [a y])
-                                  )))
-
-     )
-
-   )
-
+                                  )))))
  [1 2 3 4]
- [5]
- )
+ [5])
 
 ((fn [x y]
-   (first x)
-   )
-
+   (first x))
  [1 2 3 4]
- [5]
- )
+ [5])
 
 ;; interpose a sequence
 ((fn [x xs]
    (drop-last (flatten  (for [a xs]
-                         [a x])))
+                          [a x])))) 0 [1 2 3])
 
-   )
-
-0
-  [1 2 3]
-  
- )
 ;;; (fn [x s] (butlast (mapcat #(list % x) s)))
 
 ;;; (fn [d s] (rest (mapcat #(list d %) s)))
@@ -98,6 +83,21 @@
  [1 2 3])
 
 
+;; split a sequence without split-at
 
+((fn [n s]
+   (let [x (take n s)
+         b (drop n s)]
+     [x b]
+     ))
+
+ 1
+ [:a :b :c])
+
+;; works with subvec
+;; juxt works when applying against many args
+((juxt #(subvec %2 0 %)
+       #(subvec %2 %)) 1 [:a :b :c])
+;; better solution -- (juxt take drop)
 
 
