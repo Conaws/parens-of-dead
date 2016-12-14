@@ -149,3 +149,56 @@
 
 [1 2 3]
  [:a :b :c])
+
+
+;; problem 66, Greatest common divisor
+
+(mod 6 2)
+(mod 4 2)
+
+((fn [x y]
+   (apply max (filter #(= 0 (mod y %))
+               (filter #(= 0 (mod x %)) (range 1 (inc x))))))
+
+
+ 48
+ 24)
+
+
+(fn [x y]
+  (apply max (filter #(= 0 (mod y %) (mod x %))  (range 1 (inc (max x y))) )))
+
+
+
+((fn [m]
+   (into {} (apply concat (for [[k v] m]
+                           (for [[k' v'] v]
+                             [[k k'] v'])
+                           ))))
+
+ {:a {:b :c
+      :c :d}
+  :e {:f :g}}
+ )
+
+
+
+
+;; much nicer 
+(fn [m]
+  (->>
+   (for [[k1 v1] m
+   	     [k2 v2] v1]
+     {[k1 k2] v2})
+   (apply merge)))
+
+
+((fn [m]
+   (into {} (for [[k v] m
+                  [k' v'] v]
+              [[k k'] v'])))
+
+ {:a {:b :c
+      :c :d}
+  :e {:f :g}}
+ )
