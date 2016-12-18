@@ -202,3 +202,22 @@
       :c :d}
   :e {:f :g}}
  )
+
+
+(def a (iterate inc 0))
+
+
+
+
+(defn my-iterate [f a]
+  (cons (f a) (lazy-seq (my-iterate f (f a)))))
+
+
+(def my-i (fn elper [f a]
+            (lazy-seq (cons a (elper f (f a))))))
+
+
+;; other option
+;; #(reductions (fn [i _] (%1 i)) (repeat %2))
+
+;; (take 5 (reductions + (range 3 100)))
