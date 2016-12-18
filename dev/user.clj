@@ -221,3 +221,26 @@
 ;; #(reductions (fn [i _] (%1 i)) (repeat %2))
 
 ;; (take 5 (reductions + (range 3 100)))
+
+
+(
+ (fn [f a b]
+   (cond
+     (f a b) :lt
+     (f b a) :gt
+    :else :eq 
+
+     )
+   )
+
+ <
+ 400
+ 50
+ )
+
+
+(= :gt (__ < 5 1))
+
+(= :eq (__ (fn [x y] (< (count x) (count y))) "pear" "plum"))
+
+(= :lt (__ (fn [x y] (< (mod x 5) (mod y 5))) 21 3))
