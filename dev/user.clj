@@ -239,8 +239,84 @@
  )
 
 
-(= :gt (__ < 5 1))
 
-(= :eq (__ (fn [x y] (< (count x) (count y))) "pear" "plum"))
+;; group-by
 
-(= :lt (__ (fn [x y] (< (mod x 5) (mod y 5))) 21 3))
+(merge-with concat {:a [1]} {:a [2]})
+
+((fn my-group-by [f s]
+   (apply merge-with concat
+          (for [a s]
+            {(f a) [a]}))
+
+   )
+#(< 5 %)
+[1 2 6]
+ )
+
+;; other solutions -- I like mine the best though 
+(fn [f s]
+  (reduce (fn [m a]
+            (let [x (f a)]
+              (assoc m x (conj (get m x []) a)))) {} s))
+
+(fn gb [f s]
+  (reduce
+   (fn [m x]
+     (let [k (f x), v (m k)]
+       (assoc m k ((fnil conj []) v x))))
+   {} s))
+
+
+
+;; infix calculator
+
+
+((fn [& s]
+   (:total (reduce
+            (fn [base-map x]
+              (if-let [a (:operator base-map)]
+                {:total (a (:total base-map) x)}
+                (assoc base-map :operator x))
+              )
+
+            {:total (first s)} (rest s)))
+   )
+
+ 2
+ +
+ 2
+ -
+ 1
+)
+
+
+;; partition solutions
+(fn [& xs]
+  (reduce
+   #((first %2) %1 (last %2))
+   (first xs)
+   (partition 2 (rest xs))))
+
+(fn [x & ops]
+  (reduce
+   (fn [x [op operand]]
+     (op x operand))
+   x
+   (partition 2 ops)))
+;; real elegant multi-arity solutions
+
+(fn me
+  ([x f y] (f x y))
+  ([x f y & r] (apply me (f x y) r)))
+
+
+(fn infix
+  ([]  0)
+  ([x] x)
+  ([x y z] (y x z))
+  ([x y z & more]
+   (apply infix (y x z) more)))
+
+
+
