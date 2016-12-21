@@ -445,16 +445,119 @@
 
 (#(reduce + (map * %1 %2))  [1 2 3][2 4 4])
 
-;; (= (__ 3 (range 9)) '((0 1 2) (3 4 5) (6 7 8)))
-;; test not run	
 
-;; (= (__ 2 (range 8)) '((0 1) (2 3) (4 5) (6 7)))
-;; test not run	
-
-;; (= (__ 3 (range 8)) '((0 1 2) (3 4 5)))
-;; (= (__ 3 (range 8)) '((0 1 2) (3 4 5)))
-;; Special Restrictions
-;; partition
-;; partition-all
+;; pascals triangle
 
 
+((fn [s]
+   (loop [a [] xs s]
+     (if (empty? xs)
+       (conj a 1)
+       (recur (conj a
+                    (+ (or (last a) 0 )
+                       (first xs)
+                       ))
+              (rest xs))
+       )
+     )
+ )
+[1 3 3 1]
+ )
+
+
+((fn next-triangle [s]
+   (->> (reduce (fn [m x]
+                 (let [new-m (assoc m :to-add x)]
+                   (if-let [l (:to-add m)]
+                     (update-in new-m [:m] conj (+ x l))
+                     new-m
+                     ))
+                 )
+
+               {:m []}
+               s)
+        :m
+        (cons 1)
+        vec
+        ((fn [x]
+           (conj x 1)
+           ))
+        ))
+ [1]
+ )
+
+
+(defn next-triangle [s]
+  (->> (reduce (fn [m x]
+                 (let [new-m (assoc m :to-add x)]
+                   (if-let [l (:to-add m)]
+                     (update-in new-m [:m] conj (+ x l))
+                     new-m)))
+               {:m []} s)
+       :m
+       (cons 1)
+       vec
+       ((fn [x]
+          (conj x 1)
+          ))
+       ))
+
+
+(last (take 5 (iterate next-triangle [1])))
+
+
+((fn [n]
+   (last
+    (take n
+          (iterate
+           (fn next-triangle [s]
+             (->> (reduce (fn [m x]
+                            (let [new-m (assoc m :to-add x)]
+                              (if-let [l (:to-add m)]
+                                (update-in new-m [:m] conj (+ x l))
+                                new-m)))
+                          {:m []} s)
+                  :m
+                  (cons 1)
+                  vec
+                  ((fn [x]
+                     (conj x 1)
+                     ))
+                  ))
+           [1])))
+   )
+9
+ )
+
+
+((fn [n]
+   (nth
+    (iterate
+     (fn next-triangle [s]
+       (->> (reduce (fn [m x]
+                      (let [new-m (assoc m :to-add x)]
+                        (if-let [l (:to-add m)]
+                          (update-in new-m [:m] conj (+ x l))
+                          new-m)))
+                    {:m []} s)
+            :m
+            (cons 1)
+            vec
+            ((fn [x]
+               (conj x 1)
+               ))
+            ))
+     [1])
+    n)
+   )
+ 9
+ )
+
+(#(nth (iterate (fn [x] (concat [1] 
+                               (map + x (rest x)) 
+                               [1])) 
+                [1]) (dec %))
+
+
+4
+ )
