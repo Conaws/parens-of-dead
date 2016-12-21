@@ -372,16 +372,63 @@
 #(fn [x] (reduce * ( repeat % x)) )
 
 
-;; Problem 55
+;; Problem 55 -- count occurances
 
 ;; (= (__ [1 1 2 3 2 1 1]) {1 4, 2 2, 3 1})
+;; (update {1 1 2 0} 3 (fnil inc 0))
+((fn [s]
+   (reduce
+    (fn [m x]
+      (update m x (fnil inc 0))
+      )
+    {}
+    s)))
 
 
 
+(#(reduce (fn [m x]
+             (assoc m x (inc (get m x 0))))
+          {}
+          %)
+
+
+[1 1 2 3 2 1 1] )
+
+;; shorter solution
+;; reduce #(update-in % [%2] (fnil inc 0)) {}
+
+
+;; (group-by identity [1 1 2 3 4 4  3 3 5])
+
+;; #(let[m (group-by identity %)]
+;;    (zipmap (keys m) (map count (vals m))))
+;; #(into {} (for [[k v] (group-by identity %)] [k (count v)]))
 
 
 ;Write a function which returns a sequence of lists of x items each. Lists of less than x items should not be returned.
-;; test not run	
+
+
+
+(fn [partition-size s]
+  (loop [a [] p s]
+    (if (= partition-size (count (take partition-size p)))
+      (recur (conj a (take partition-size p)) (drop partition-size p))
+      a
+      )
+    ))
+
+
+
+;; solution using lazy-cat and take-while
+
+
+(fn [w xs]
+  (take-while #(= w (count %))
+              ((fn lazypart [ys]
+                 (lazy-cat [(take w ys)] (lazypart (drop w ys))))
+               xs)))
+
+
 
 ;; (= (__ 3 (range 9)) '((0 1 2) (3 4 5) (6 7 8)))
 ;; test not run	
