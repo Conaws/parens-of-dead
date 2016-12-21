@@ -320,3 +320,77 @@
 
 
 
+;; Product digits
+
+((fn [x y]
+   (->> (* x y)
+       str
+       seq
+       (map (comp read-string str) )
+       ))
+
+ 5
+ 5
+ )
+
+;; position in sequence 
+
+((fn [xs]
+   (for [[b a] (map-indexed vector xs)]
+     [a b])
+   )
+
+ [:a :b :c])
+
+;; better solutions
+
+#(map vector % (range))
+
+;; map-indexed #(vector %2 %)
+
+
+;; simple closures 107
+;; my solution
+
+(defn to-the [n]
+  (fn raise [z]
+    (reduce (fn [y _] (* y z)) 1 (range n))))
+
+((to-the 3) 10)
+
+((fn [n]
+   (fn [ex]
+     (reduce (fn [y x] (* y n)) 1 (range ex)))) 3) 
+
+
+;; better solution
+#(let[pow %]
+   (fn[x]
+     (apply * (take pow (repeat x)))))
+
+
+#(fn [x] (reduce * ( repeat % x)) )
+
+
+;; Problem 55
+
+;; (= (__ [1 1 2 3 2 1 1]) {1 4, 2 2, 3 1})
+
+
+
+
+
+;Write a function which returns a sequence of lists of x items each. Lists of less than x items should not be returned.
+;; test not run	
+
+;; (= (__ 3 (range 9)) '((0 1 2) (3 4 5) (6 7 8)))
+;; test not run	
+
+;; (= (__ 2 (range 8)) '((0 1) (2 3) (4 5) (6 7)))
+;; test not run	
+
+;; (= (__ 3 (range 8)) '((0 1 2) (3 4 5)))
+;; (= (__ 3 (range 8)) '((0 1 2) (3 4 5)))
+;; Special Restrictions
+;; partition
+;; partition-all
