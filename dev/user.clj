@@ -561,3 +561,32 @@
 
 4
  )
+
+
+
+(defn get-b [n]
+  (nth (iterate #(* 2 %) 1) n))
+
+
+
+((fn [n]
+   (->> n
+        seq
+        (map (comp read-string str))
+        reverse
+        (map-indexed vector)
+        (filter (comp (partial = 1) second))
+        (map first)
+        (map
+         (fn get-b [n]
+           (nth (iterate #(* 2 %) 1) n))
+
+         )
+        (apply +)
+        )
+
+   )
+
+
+ "1111")
+
