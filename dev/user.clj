@@ -590,3 +590,44 @@
 
  "1111")
 
+
+((fn h [f s]
+   (if (empty? s)
+     []
+     (lazy-seq (cons (f (first s)) (h f (rest s))))
+     )
+   )
+ inc
+(range 1001)
+ )
+
+
+;; better solution
+
+(
+ (fn [f xs]
+   (reductions
+    (fn [_ x] (f x))
+    (f (first xs))
+    (rest xs))
+   )
+ #(* 2 %)
+ (range 20 30)
+ )
+;; (fn [f x] (rest (reductions #(f %2) nil x)))
+
+
+((fn h [tree]
+   (and (coll? tree)
+        (= 3 (count tree))
+        (every? true?
+                (map
+                 #(if (coll? %)
+                    (h %)
+                    true)
+                 tree
+                 ))))
+ [1 2 [1 2 [1 2 1]]]
+ )
+
+
