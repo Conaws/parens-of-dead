@@ -57,47 +57,50 @@ Link: file:~/src/side/parens-of-the-dead/src/roam/cards/colors.cljs
  Link: file:~/src/side/parens-of-the-dead/src/undead/cards/search.cljs::(deftest%20queries2%0A%20(let%20%5B%0A%20q%20'%5B:find%20?p-names%0A%20:in%20$%20%25%0A%20:where%0A%20%5B?parents%20:title%20?p-names%5D%0A%20(child%20?parents%20?c)%5D%0A%0A%20q1%20'%5B:find%20?c-title%0A%20:in%20$%20%25%20$titles%0A%20:where%0A%20%5B$titles%20?parent-titles%5D%0A%20%5B?p%20:title%20?parent-titles%5D%0A%20(child%20?p%20?c)%0A%20%5B?c%20:title%20?c-title%5D%0A%20%5D%5D%0A%20(testing%20"qs"%0A%20(is%20(=%20(d/q%20q%20parent-child-db%20simple-child)%20#{%5B10%5D}))%0A%20(is%20(=%20(d/q%20q1%20parent-child-db%20simple-child%20%5B%5B"Oct%201"%5D%5D)%20#{%5B"A"%5D%5B"B"%5D}))%0A%20)))
 
 * log
-** October 5, 2016
-*** 00:12:18
+** 00:12:18
+
+* log 17:09:17
+
+** css transition group in reagent
+* October 5, 2016
 break
 
 00:15:47
 
 
 01:16:38
-*** looking for clj web scraping
+** looking for clj web scraping
 
 01:16:54
-*** try scraping mit with enlive
+** try scraping mit with enlive
 
 https://github.com/swannodette/enlive-tutorial
-*** videos
+** videos
 
 04:44:22
 
 
-*** double slit experiment
+** double slit experiment
 https://www.youtube.com/watch?v=A9tKncAdlHQ
 
 
 https://www.youtube.com/watch?v=J_ozTpZUvs0
 
-*** DONE https://www.youtube.com/watch?v=J_ozTpZUvs0
+** DONE https://www.youtube.com/watch?v=J_ozTpZUvs0
 CLOSED: [2016-10-05 Wed 05:16]
 
-
-** October 8, 2016 
+* October 8, 2016 
 
 03:40:32
 
-*** trying new more ergonomic setup with cheapo keyboard\
+** trying new more ergonomic setup with cheapo keyboard\
 
-**** Not having ctrl mapped to capslock is a pain
+*** Not having ctrl mapped to capslock is a pain
 
-**** so is the slow responsiveness of the keys
+*** so is the slow responsiveness of the keys
 who need to be pushed wayy too far down
 
-**** was able to get it remapped successfully 
+*** was able to get it remapped successfully 
 
 just had to select the usb keyboard instead of the 
 mac keyboard -- makes a big difference putting cmd and
@@ -106,52 +109,52 @@ ctrl in the right place, was really bugging me out before..
 sadly don't have a function key, but its cool
 
 
-*** change fn keys to be useful 
+** change fn keys to be useful 
 :LOGBOOK:
 CLOCK: [2016-10-08 Sat 03:44]--[2016-10-08 Sat 03:48] =>  0:04
 :END:
 
-*** break 
+** break 
 :LOGBOOK:
 CLOCK: [2016-10-08 Sat 03:48]--[2016-10-08 Sat 05:41] =>  1:53
 :END:
 
 included meditation, shower, stretching and reading less wrong
 
-*** tasks
+** tasks
 :LOGBOOK:
 CLOCK: [2016-10-08 Sat 05:41]--[2016-10-08 Sat 06:12] =>  0:31
 :END:
 
-**** Figure out what is wrong with my leg
+*** Figure out what is wrong with my leg
 
-**** create sample data for  testing this parent/child search
+*** create sample data for  testing this parent/child search
 
-**** figure out how I want to represent dates in the system
+*** figure out how I want to represent dates in the system
 
-***** Generate a list of dates for this week
+**** Generate a list of dates for this week
 
-***** generate a list of days in the month
+**** generate a list of days in the month
 
-***** learn all the helper functions -- or the commonly written ones for working with time in cljs
+**** learn all the helper functions -- or the commonly written ones for working with time in cljs
 
-**** create the parent/child search boxes
+*** create the parent/child search boxes
 
-**** create a view for inputing in text to a node -- full stories
+*** create a view for inputing in text to a node -- full stories
 
-****  get more practice in artist mode to draw quick diagrams in my todos
+***  get more practice in artist mode to draw quick diagrams in my todos
 
-**** download the anki deck for spaced repetitoin stuff
+*** download the anki deck for spaced repetitoin stuff
 
-**** checkout the mobile app for zotero
+*** checkout the mobile app for zotero
 
-***** would require
+**** would require
 
-****** reseting my zotero password
+***** reseting my zotero password
 
-**** create an ADD tags, interface at the individual node level --
+*** create an ADD tags, interface at the individual node level --
 
-**** create an add parents, and/or, add children interface at the individual node level
+*** create an add parents, and/or, add children interface at the individual node level
 
 |----------------------     -
 -------------
@@ -172,11 +175,11 @@ CLOCK: [2016-10-08 Sat 05:41]--[2016-10-08 Sat 06:12] =>  0:31
 
 *
 
-***  simple parents and node
+**  simple parents and node
 
-** October 11, 2016
+* October 11, 2016
 
-*** Color Scheme found
+** Color Scheme found
 
 http://www.colorzilla.com/colors/050508+25272E+1D2028+2A2D34+646871+000000+CCCCCC+E3E3E3+F7F7F7+FFFFFF?source-url=burakcan.github.io%252FKangaroo%252F
 
@@ -188,22 +191,22 @@ main aside color
 
 #2A2D34
 
-*** Todays todos
+** Todays todos
 
-**** What do I want to achieve today
+*** What do I want to achieve today
 
-***** A very simple search box
+**** A very simple search box
 
-****** Search and filter
+***** Search and filter
 
-****** Show all the parents of the currently visible nodes
+***** Show all the parents of the currently visible nodes
 
-****** github icons
+***** github icons
 
 
 Github Octicons icons by Github https://octicons.github.com/
 
-****** log
+***** log
 
 08:39:04
 
@@ -212,11 +215,11 @@ go to gym now
 
 15:20:38
 
-****** Joy of Clojure
+***** Joy of Clojure
 
-******* macros
+****** macros
 
-******* regex
+****** regex
 “Regular expressions accept option flags, shown in table 4.1, that can make a pattern case-insensitive or enable multiline mode. Clojure’s regex literals starting with (?<flag>) set the mode for the rest of the pattern. For example, the pattern #"(?i)yo" matches the strings “yo”, “yO”, “Yo”, and “YO”.
 
 Table 4.1. Flags that can be used in Clojure regular-expression patterns, along with their long name and a description of what they do. See Java’s documentation for the java.util.regex.Pattern class for more details.
@@ -236,7 +239,7 @@ u	UNICODE_CASE	Causes the i flag to use Unicode case insensitivity instead of AS
 
 Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
 
-******** capture groups
+******* capture groups
 “A capturing group (subsegments that are accessible via the returned match object) in the regex causes each returned item to be a vector:
 
 (re-seq #"\w*(\w)" "one-two/three")
@@ -244,9 +247,9 @@ Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.
 
 Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
 
-******* vectors
+****** vectors
 
-******** into
+******* into
 
 “If you already have a vector but want to pour several values into it, then into is your friend:
 
@@ -256,7 +259,7 @@ Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.
 
 Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
 
-******** getting value in
+******* getting value in
 
 (def a-to-j (vec (map char(range 65 75))))
 
@@ -273,7 +276,7 @@ All three of these do the same work, and each returns \E:
 
 Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
 
-******** rseq
+******* rseq
 
 “(seq a-to-j)
 ;=> (\A \B \C \D \E \F \G \H \I \J)
@@ -282,12 +285,12 @@ Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.
 ;=> (\J \I \H \G \F \E \D \C \B \A)”
 
 
-******** replace
+******* replace
 
 “(replace {2 :a, 4 :b} [1 2 3 2 3 4])
 ;=> [1 :a 3 :a 3 :b]”
 
-******** update-in, assoc-in, get-in
+******* update-in, assoc-in, get-in
 
 “(def matrix
      [[1 2 3]
@@ -299,7 +302,7 @@ Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.
 (update-in matrix [1 2] * 100)
 ;=> [[1 2 3] [4 5 600] [7 8 9]]
 
-******** neighbors
+******* neighbors
 
 (def neighbors
 ([size yx] (neighbors [[-1 0] [1 0] [0 -1] [0 1]]
@@ -324,7 +327,7 @@ yx))
 “(map #(get-in matrix %) (neighbors 3 [0 0]))
 ”
 
-******** pop and peek
+******* pop and peek
 
 “The conj function adds elements to, and pop removes elements from, the right side of the stack. Because vectors are immutable, pop returns a new vector with the rightmost item dropped—this is different from many mutable stack APIs, which generally return the dropped item. Consequently, peek becomes more important as the primary way to get an item from the top of the stack:
 
@@ -345,12 +348,12 @@ yx))
 
 Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
 
-******** subvec
+******* subvec
 
 “(subvec a-to-j 3 6)
 ;=> [\D \E \F]”
 
-******** vecs and maps 
+******* vecs and maps 
 
 “(doseq [[dimension amount] {:width 10, :height 20, :depth 15}]
   (println (str (name dimension) ":") amount "inches"))
@@ -361,7 +364,7 @@ Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.
 
 Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.” iBooks.
 
-******** finding element in a sequence
+******* finding element in a sequence
 
 “(some #{:b} [:a 1 :b 2])
 ;=> :b
@@ -369,25 +372,25 @@ Excerpt From: Michael Fogus Chris Houser. “The Joy of Clojure, Second Edition.
 (some #{1 :b} [:a 1 :b 2])
 ;=> 1”
 
-******* sets
+****** sets
 
-******** sorted sets
+******* sorted sets
 
 “
 (sorted-set :b 2 :c :a 3 1)
 ; java.lang.ClassCastException: clojure.lang.Keyword cannot be cast to
      java.lang.Number”
 
-****** find position of element in a sequence
+***** find position of element in a sequence
 
-******* requirements
+****** requirements
 
 “Work on any collection type, returning indices corresponding to some value
 Return a numerical index for sequential collections or associated key for maps and sets”
 
 Otherwise return nil”
 
-******* step 1 -- generate index
+****** step 1 -- generate index
 
 “(defn index [coll]
   (cond
@@ -395,12 +398,12 @@ Otherwise return nil”
     (set? coll) (map vector coll coll)
     :else (map vector (iterate inc 0) coll)))”
 
-******* pos
+****** pos
 
 “(defn pos [e coll]
   (for [[i v] (index coll) :when (= e v)] i))”
 
-******** slight improvement so can pass predicate fn
+******* slight improvement so can pass predicate fn
 
 “(pos #{3 4} {:a 1 :b 2 :c 3 :d 4})
 ;=> (:c :d)
@@ -412,10 +415,6 @@ We can modify pos only slightly to achieve the ideal level of flexibility.
 Listing 5.3. Final version of pos
 (defn pos [pred coll]
  (for [[i v] (index coll) :when (pred v)] i))”
-
-* log 17:09:17
-
-** css transition group in reagent
 
 * October 12, 2016
 
@@ -594,7 +593,7 @@ boot https://github.com/adzerk-oss/boot-beanstalk
 
 
 
-*** Aruguments
+*** Arguments
 
 *** Premise
 
