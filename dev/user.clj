@@ -10,7 +10,7 @@
 ;; fclojure http://www.4clojure.com/problem/solutions/29
 (+ 1 1)
 (defn x [x]
-  (apply str 
+  (apply str
          (filter #(re-matches #"[A-Z]" (str %)) x)))
 
 
@@ -116,7 +116,7 @@
               (not (every? true? s)))))
 
  false
- false 
+ false
  )
 
 ;; alternatives are
@@ -129,7 +129,7 @@
 
 
 ;;flipping out
-(fn [my-fn] 
+(fn [my-fn]
   (fn [& args]
     (apply my-fn (reverse args))))
 
@@ -184,7 +184,7 @@
 
 
 
-;; much nicer 
+;; much nicer
 (fn [m]
   (->>
    (for [[k1 v1] m
@@ -228,7 +228,7 @@
    (cond
      (f a b) :lt
      (f b a) :gt
-    :else :eq 
+    :else :eq
 
      )
    )
@@ -254,7 +254,7 @@
 [1 2 6]
  )
 
-;; other solutions -- I like mine the best though 
+;; other solutions -- I like mine the best though
 (fn [f s]
   (reduce (fn [m a]
             (let [x (f a)]
@@ -333,7 +333,7 @@
  5
  )
 
-;; position in sequence 
+;; position in sequence
 
 ((fn [xs]
    (for [[b a] (map-indexed vector xs)]
@@ -360,7 +360,7 @@
 
 ((fn [n]
    (fn [ex]
-     (reduce (fn [y x] (* y n)) 1 (range ex)))) 3) 
+     (reduce (fn [y x] (* y n)) 1 (range ex)))) 3)
 
 
 ;; better solution
@@ -553,9 +553,9 @@
  9
  )
 
-(#(nth (iterate (fn [x] (concat [1] 
-                               (map + x (rest x)) 
-                               [1])) 
+(#(nth (iterate (fn [x] (concat [1]
+                               (map + x (rest x))
+                               [1]))
                 [1]) (dec %))
 
 
@@ -639,3 +639,74 @@
       (and (tree? (second coll)) (tree? (last coll)))
       false)
     (not (false? coll))))
+
+
+
+;;; beauty is symmettry
+;; [1 [2 nil [3 [4 [5 nil nil] [6 nil nil]] nil]]
+;;  [2 [3 nil [4 [6 nil nil] [5 nil nil]]] nil]]
+
+;; step 1, take a tree and reverse it
+
+
+
+;; ++ +-------------+--------------------------------+----------+
+;; || |-------------||||||||||+--|+      ||||||||    |  | |     |
+;; || |-------------||+||||||||----------||||||||    |  | |     |
+;; ||+|-------------||-|||||||+----------+|||||||    |  | |     |
+;; ||+|-------------||-|+||||||-----------||||||+    |  | |     |
+;; || |-------------||-|-||||||-----------||||||-----|--+ |     |
+;; || +-------------+--------------------------------+----+     |
+;; ||       +--------------++ |-------------|-------------------+
+;; ||                         +-------------+
+;; ++
+
+((fn [tree]
+   (let [flip (fn [[root l r]]
+                [root r l])]
+     (flip tree)
+     ))
+
+
+ [1 [2 nil [3 4 nil]]
+  [2 [3 nil 4] nil]]
+ )
+
+
+((fn symmetrical? [tree]
+   (let [df (fn deep-flip [tree]
+           (if (coll? tree)
+             (let [[root l r] tree]
+               [root
+                (deep-flip r)
+                (deep-flip l)])
+             tree)
+              )]
+     (= tree
+      (df tree))
+     ))
+
+ [1 [2 nil [3 4 nil]]
+  [2 [3 nil 4] nil]
+  ]
+ )
+
+
+;; using letfn
+(fn
+  [t]
+  (letfn [(mirror [t] (if (nil? t)
+                        nil
+                        [(first t)
+                         (mirror (nth t 2))
+                         (mirror (nth t 1))]))]
+    (= t (mirror t))))
+
+;; #(letfn [(mirror [tree]
+;;            (if (nil? tree) nil
+;;                [(first tree)
+;;                 (mirror (second (rest tree)))
+;;                 (mirror (second tree))]))]
+;;    (=
+;;     (flatten (second %1))
+;;     (flatten (mirror (second (rest %1))))))
