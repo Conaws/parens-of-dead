@@ -530,38 +530,40 @@
  )
 
 
-((fn [n]
-   (nth
+;; better pascal's triangle
+(#(nth (iterate (fn [x] (concat [1]
+                                (map + x (rest x))
+                                [1]))
+                [1]) (dec %))
+
+ 4
+ )
+
+
+
+
+;; pascal's trapezoid
+(take 5
+      ((fn ptrap [start]
     (iterate
      (fn next-triangle [s]
        (->> (reduce (fn [m x]
                       (let [new-m (assoc m :to-add x)]
                         (if-let [l (:to-add m)]
-                          (update-in new-m [:m] conj (+ x l))
+                          (update-in new-m [:m] conj (+' x l))
                           new-m)))
-                    {:m []} s)
-            :m
-            (cons 1)
-            vec
-            ((fn [x]
-               (conj x 1)
-               ))
-            ))
-     [1])
-    n)
-   )
- 9
- )
+                    {:m []}
+                    (concat [0] s [0]))
+            :m))
+     start))
+  [1 2 1]
+  ))
 
-(#(nth (iterate (fn [x] (concat [1]
-                               (map + x (rest x))
-                               [1]))
-                [1]) (dec %))
+;; better pascal's trapezoid
 
-
-4
- )
-
+(fn [row]
+  (let [next-row #(map +' (concat [0] %) (concat % [0]))]
+    (iterate next-row row)))
 
 
 (defn get-b [n]
