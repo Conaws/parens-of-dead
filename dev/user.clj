@@ -712,3 +712,29 @@
 ;;    (=
 ;;     (flatten (second %1))
 ;;     (flatten (mirror (second (rest %1))))))
+
+
+;; playing cards
+
+(apply hash-map (concat ["J" 9 "Q" 10 "K" 11 "A" 12] (interleave (range 8) (range 2 10))))
+
+(apply sorted-map (concat ["J" 9 "Q" 10 "K" 11 "A" 12] (interleave(map str (range 2 11)) (range 10))))
+
+(defn suit [card]
+  (let [suit-map {"D" :diamond
+                  "S" :spade
+                  "C" :club
+                  "H" :heart}
+        rank-map (apply sorted-map (concat ["T" 8 "J" 9 "Q" 10 "K" 11 "A" 12] (interleave(map str (range 2 10)) (range 9))))
+
+        [_ s r]
+        (re-find #"(D|S|C|H)([0-9]+|[TQJKA])" card)]
+    {:rank (rank-map r)
+     :suit (suit-map s)}))
+
+(map
+(comp :rank suit str)
+ '[S2 S3 S4 S5 S6 S7 S8 S9 ST SJ]
+
+ )
+
