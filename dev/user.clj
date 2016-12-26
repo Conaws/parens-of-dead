@@ -620,14 +620,22 @@
 ((fn h [tree]
    (and (coll? tree)
         (= 3 (count tree))
-        (every? true?
+        (every? (comp not false?)
                 (map
                  #(if (coll? %)
                     (h %)
-                    true)
+                    %)
                  tree
                  ))))
- [1 2 [1 2 [1 2 1]]]
+ [1 [2 [3 [4 false nil] nil] nil] nil]
  )
 
 
+;; better solution
+
+(fn tree? [coll]
+  (if (coll? coll)
+    (if (= (count coll) 3)
+      (and (tree? (second coll)) (tree? (last coll)))
+      false)
+    (not (false? coll))))
